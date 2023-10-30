@@ -41,14 +41,7 @@ Private Sub newSectorBtn_Click()
 End Sub
 
 Private Sub addSectorBtn_Click()
-    ' Check If the SectorNo field is empty
-    If IsNull(Me.SectorNo.Value) Then
-        MsgBox "Please enter a value For Sector Number.", vbExclamation
-        Me.SectorNo.SetFocus
-     Exit Sub
-    End If
-
-    ' Rest of the code To add the record goes here...
+ ' Rest of the code To add the record goes here...
     Dim db As DAO.Database
     Dim rs As DAO.Recordset
     ' Open the main table's recordset
@@ -113,9 +106,6 @@ Private Sub ResetFormFields()
 
     ' ... Clear values of other form controls
 End Sub
-
-
-
 Private Function GetLastRefNo() As Variant
     ' Get the latest AddedTime value from FlightRequestsT table
     Dim db As DAO.Database
