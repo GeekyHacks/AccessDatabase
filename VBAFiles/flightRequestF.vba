@@ -29,7 +29,10 @@ Private Sub closeBtn_Click()
         If Me.Dirty Then
             ' If the form has unsaved changes, prompt the user To save the changes
             If MsgBox("Do you want To save the changes?", vbQuestion + vbYesNo, "Save Changes") = vbYes Then
-                DoCmd.Save
+            If MsgBox("Are you sure, this will create a duplicate fligth request?", vbQuestion + vbYesNo, "Save Changes") = vbYes Then
+            DoCmd.Save
+            End If
+            
             End If
         End If
 
@@ -99,7 +102,7 @@ ErrorHandler:
     Set db = Nothing
 End Sub
 
-Private Sub AddSectorBtn_Click()
+Private Sub addSectorBtn_Click()
     DoCmd.OpenForm "AddSectorF", WindowMode:=acDialog
 End Sub
 
@@ -151,11 +154,10 @@ End Function
 
 Private Sub updateFlightbtn_Click()
     DoCmd.Save
-    DoCmd.Requery
 End Sub
-Private Sub Form_Load()
+Private Sub loadForm()
     ' Check if the form is in DataEntry mode
-    If Not Me.NewRecord Then
+    If Me.NewRecord Then
         ' Get the latest AddedTime value from FlightRequestsT table
         Dim db As DAO.Database
         Dim rs As DAO.Recordset
@@ -168,10 +170,10 @@ Private Sub Form_Load()
 
         ' Check if there is a latest AddedTime value
         If Not rs.EOF Then
-            latestAddedTime = rs.Fields("LatestAddedTime").Value
+            latestAddedTime = rs.Fields("AddedTime").Value
 
             ' Retrieve the record with the latest AddedTime
-            strSQL = "SELECT * FROM FlightRequestsT WHERE AddedTime = #" & Format(latestAddedTime, "mm-dd-yyyy hh:mm:ss") & "#"
+            strSQL = "SELECT TOP 1 * FROM FlightRequestsT WHERE AddedTime = #" & Format(latestAddedTime, "mm/dd/yyyy hh:mm:ss") & "# ORDER BY AddedTime DESC"
             rs.Close
             Set rs = db.OpenRecordset(strSQL)
 
@@ -197,127 +199,6 @@ Private Sub Form_Load()
         Set db = Nothing
     End If
 End Sub
-
-
-    Option Compare Database
-
-    Private Sub AddServicesBtn_Click()
-        DoCmd.OpenForm "multiNewServicesF", WindowMode:=acDialog
-    End Sub
-    
-    Private Sub closeBtn_Click()
-        ' Check if the form is in NewRecord mode before closing
-        If Me.NewRecord Then
-            DoCmd.Close acForm, "AddSectorF", acSaveNo
-        Else
-            DoCmd.Close acForm, "AddSectorF"
-        End If
-    End Sub
-    
-    Private Sub Form_Load()
-        ' Check if the form is in DataEntry mode
-        If Not Me.NewRecord Then
-            ' Get the latest AddedTime value from FlightRequestsT table
-            Dim db As DAO.Database
-            Dim rs As DAO.Recordset
-            Dim strSQL As String
-            Dim latestAddedTime As Variant
-    
-            Set db = CurrentDb
-            strSQL = "SELECT MAX(AddedTime) AS LatestAddedTime FROM FlightRequestsT"
-            Set rs = db.OpenRecordset(strSQL)
-    
-            ' Check if there is a latest AddedTime value
-            If Not rs.EOF Then
-                latestAddedTime = rs.Fields("LatestAddedTime").Value
-    
-                ' Get the record with the latest AddedTime value from FlightRequestsT table
-                strSQL = "SELECT * FROM FlightRequestsT WHERE AddedTime = (SELECT MAX(AddedTime) FROM FlightRequestsT)"
-                Set rs = db.OpenRecordset(strSQL)
-    
-                ' Check if a record was found
-                If Not rs.EOF Then
-                    ' Assign the field values to the form controls
-                    Me.RefNo.Value = rs.Fields("RefNo").Value
-                    ' Adjust the following lines according to your field names
-                    Me.Sect_ID.Value = GenerateNewSect_ID()
-                    Me.SectorNo.Value = rs.Fields("SectorNo").Value
-                    Me.SectorLocation.Value = rs.Fields("SectorLocation").Value
-                    Me.Location.Value = rs.Fields("Location").Value
-                    Me.ETD.Value = rs.Fields("ETD").Value
-                    Me.ETA.Value = rs.Fields("ETA").Value
-                    Me.ATD.Value = rs.Fields("ATD").Value
-                    Me.ATA.Value = rs.Fields("ATA").Value
-                    ' Add more lines for other fields
-    
-                    ' ... Assign values to other form controls
-    
-                End If
-            End If
-    
-            ' Clean up
-            rs.Close
-            Set rs = Nothing
-            Set db = Nothing
-        End If
-    End Sub
-    
-    Private Sub newSectorBtn_Click()
-        ' Check if there are any unsaved changes
-        If Me.Dirty Then
-            Me.Undo ' Undo any changes to cancel the current record
-        End If
-    
-        ' Clear the form fields to prepare for a new record
-        ResetFormFields
-    
-        ' Generate a new Sect_ID and assign it to the form control
-        Me.Sect_ID.Value = GenerateNewSect_ID()
-    
-        ' Set focus to the first field for data entry
-        Me.SectorNo.SetFocus
-    End Sub
-    
-    Private Sub addSectorBtn_Click()
-        ' Check if the SectorNo field is empty
-        If IsNull(Me.SectorNo.Value) Then
-            MsgBox "Please enter a value for Sector Number.", vbExclamation
-            Me.SectorNo.SetFocus
-            Exit Sub
-        End If
-    
-        ' Rest of the code to add the record goes here...
-        Dim db As DAO.Database
-        Dim rs As DAO.Recordset
-    
-        ' Open the main table's recordset
-        Set db = CurrentDb
-        Set rs = db.OpenRecordset("SectorsT", dbOpenDynaset)
-    
-        ' Add a new record
-        rs.AddNew
-    
-        ' Assign values to the fields in the table
-        rs!Sect_ID = Me.Sect_ID.Value
-        rs!RefNo = Me.RefNo.Value
-        rs!SectorNo = Me.SectorNo.Value
-        rs!SectorLocation = Me.SectorLocation.Value
-        rs!Location = Me.Location.Value
-        rs!ETD = Me.ETD.Value
-        rs!ETA = Me.ETA.Value
-        rs!ATD = Me.ATD.Value
-        rs!ATA = Me.ATA.Value
-    
-        rs.Update
-    
-        ' Clean up
-        rs.Close
-        Set rs = Nothing
-        Set db = Nothing
-    
-        ' Reset the form fields
-        ResetFormFields
-    
-        ' Optional: Display a message indicating successful addition
-        MsgBox "Sector added successfully.", vbInformation
-    End Sub
+Private Sub Form_Load()
+   loadForm
+End Sub
