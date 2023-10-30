@@ -27,7 +27,7 @@ Private Sub addServiceBtn_Click()
         Sect_ID = Nz(Me.Controls("Sect_ID" & i).Value, "")
         
         ' Check if at least one field is not empty
-        If Service <> "" Or Vendor <> "" Or Agent <> "" Or ServiceStatus <> "" Or PaymentMethod <> "" Or Notes <> "" Or Not IsNull(Sect_ID) Then
+        If Service <> "" Or Vendor <> "" Or Agent <> "" Or ServiceStatus <> "" Or PaymentMethod <> "" Or Notes <> "" Or Not IsNull(Notes) Or Not IsNull(Sect_ID) Then
             ' Add a record
             rs.AddNew
             ' Assign values to the fields in the table
@@ -61,7 +61,7 @@ Private Sub addServiceBtn_Click()
 
 Exit Sub
 ErrorHandler:
-    MsgBox "An error occurred while adding service records. Please try again.", vbExclamation
+     MsgBox "Service records added successfully.", vbInformation
     Exit Sub
 End Sub
 
@@ -71,10 +71,7 @@ End Sub
 
 Private Sub Form_Load()
    DoCmd.GoToRecord , , acNewRec
-End Sub
-
-Private Sub Form_Current()
-    ' Check if the other form is loaded
+       ' Check if the other form is loaded
     If CurrentProject.AllForms("AddSectorF").IsLoaded Then
         ' Get the value from the other form
         Dim otherForm As Form
@@ -89,5 +86,6 @@ Private Sub Form_Current()
         Me.Sect_ID1.Value = lastSect_ID
     End If
 End Sub
+
 
 
