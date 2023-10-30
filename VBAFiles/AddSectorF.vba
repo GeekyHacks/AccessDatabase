@@ -6,24 +6,30 @@ Private Sub AddServicesBtn_Click()
 End Sub
 
 Private Sub closeBtn_Click()
-    ' Check If the form is in NewRecord mode before closing
-    If Me.NewRecord Then
-        DoCmd.Close acForm, "AddSectorF", acSaveNo
+    ' Check if there are any unsaved changes
+    If Me.Dirty Then
+        ' Prompt the user to save changes
+        Dim response As Integer
+        response = MsgBox("Do you want to save the changes?", vbQuestion + vbYesNoCancel)
+        
+        Select Case response
+            Case vbYes
+                ' Save the changes
+                Me.Dirty = False ' Save the changes made on the form
+                DoCmd.Close acForm, Me.Name ' Close the form
+            Case vbNo
+                ' Discard the changes
+                Me.Undo ' Undo the changes made on the form
+                DoCmd.Close acForm, Me.Name ' Close the form
+            Case vbCancel
+                ' Cancel the close operation
+                Exit Sub
+        End Select
     Else
-        DoCmd.Close acForm, "AddSectorF"
+        ' No unsaved changes, close the form
+        DoCmd.Close acForm, Me.Name
     End If
 End Sub
-Private Sub Form_Load()
-    ' Navigate to a new record
-    DoCmd.GoToRecord acDataForm, Me.Name, acNewRec
-    
-    ' Set the RefNo value
-    Me.RefNo.Value = GetLastRefNo()
-    
-    ' Set the Sect_ID value
-    Me.Sect_ID.Value = GenerateNewSect_ID()
-End Sub
-
 Private Sub newSectorBtn_Click()
     ' Check If there are any unsaved changes
     If Me.Dirty Then
@@ -33,18 +39,42 @@ Private Sub newSectorBtn_Click()
     ' Clear the form fields To prepare For a New record
     ResetFormFields
 
-    ' Generate a New Sect_ID And assign it To the form control
-    Me.Sect_ID.Value = GenerateNewSect_ID()
-
     ' Set focus To the first field For data entry
     Me.SectorNo.SetFocus
 End Sub
 
+
+Private Function ValidateFormFields() As Boolean
+    ' Check if any required fields are empty
+    If Me.SectorNo.Value = "" Then
+        MsgBox "Sector Number is required.", vbExclamation
+        Me.SectorNo.SetFocus
+        ValidateFormFields = False
+        Exit Function
+    End If
+    
+    If Me.SectorLocation.Value = "" Then
+        MsgBox "Sector Location is required.", vbExclamation
+        Me.SectorLocation.SetFocus
+        ValidateFormFields = False
+        Exit Function
+    End If
+    
+    ' Add more field validations as needed
+    
+    ' If all validations pass, return True
+    ValidateFormFields = True
+End Function
+
 Private Sub addSectorBtn_Click()
- ' Rest of the code To add the record goes here...
+    ' Check if all required fields are filled in
+    If Not ValidateFormFields() Then
+        Exit Sub
+    End If
+
+    ' Open the main table's recordset
     Dim db As DAO.Database
     Dim rs As DAO.Recordset
-    ' Open the main table's recordset
     Set db = CurrentDb
     Set rs = db.OpenRecordset("SectorsT", dbOpenDynaset)
 
@@ -96,7 +126,9 @@ End Function
 
 Private Sub ResetFormFields()
     ' Clear the form
-    Me.SectorNo.Value = ""
+        ' Generate a New Sect_ID And assign it To the form control
+    Me.Sect_ID.Value = GenerateNewSect_ID()
+    Me.RefNo.Value = GetLastRefNo()
     Me.SectorLocation.Value = ""
     Me.Location.Value = ""
     Me.ETD.Value = ""
