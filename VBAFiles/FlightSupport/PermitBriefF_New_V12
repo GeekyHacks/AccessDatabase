@@ -1,0 +1,277 @@
+Option Compare Database
+Option Explicit
+Private Sub CountriesCmb1_AfterUpdate()
+    HandleCountriesCmbUpdate Me.CountriesCmb1, Me.PermitValidity1, Me.Vendor1
+End Sub
+
+Private Sub CountriesCmb2_AfterUpdate()
+    HandleCountriesCmbUpdate Me.CountriesCmb2, Me.PermitValidity2, Me.Vendor2
+End Sub
+
+Private Sub CountriesCmb3_AfterUpdate()
+    HandleCountriesCmbUpdate Me.CountriesCmb3, Me.PermitValidity3, Me.Vendor3
+End Sub
+
+Private Sub CountriesCmb4_AfterUpdate()
+    HandleCountriesCmbUpdate Me.CountriesCmb4, Me.PermitValidity4, Me.Vendor4
+End Sub
+
+Private Sub CountriesCmb5_AfterUpdate()
+    HandleCountriesCmbUpdate Me.CountriesCmb5, Me.PermitValidity5, Me.Vendor5
+End Sub
+
+Private Sub HandleCountriesCmbUpdate(cmb As ComboBox, permitValidityControl As Control, vendorComboBox As ComboBox)
+    Dim selectedValue As Variant
+    selectedValue = cmb.Value ' Get the selected value from the combo box
+
+    ' Check if selected value is not null
+    If Not IsNull(selectedValue) Then
+        ' Call PermitValidity function
+        PermitValidity_sub selectedValue, permitValidityControl
+        ' Call Operationalprocedures function
+        Operationalprocedures_sub selectedValue, vendorComboBox
+    Else
+        permitValidityControl.Value = Null ' Clear the specific PermitValidity control
+        vendorComboBox.RowSource = "" ' Clear the vendor combo box
+    End If
+End Sub
+
+Private Sub PermitValidity_sub(selectedValue As Variant, permitValidityControl As Control)
+    Dim rs As DAO.Recordset
+    Set rs = CurrentDb.OpenRecordset("SELECT * FROM CountriesT_New WHERE COUNTRY = '" & selectedValue & "'", dbOpenSnapshot)
+
+    If Not rs.EOF Then
+        permitValidityControl.Value = rs("OVF_PermitValidity").Value ' Set the specific PermitValidity control
+    Else
+        permitValidityControl.Value = "+24"
+    End If
+    rs.Close
+    Set rs = Nothing
+End Sub
+
+Private Sub Operationalprocedures_sub(selectedValue As Variant, vendorComboBox As ComboBox)
+    Dim rs As DAO.Recordset
+    Dim msgText As String
+    Dim VendorsQ As String
+    Dim SelectedVendors As Boolean
+    
+    SelectedVendors = True
+
+    ' Validate input
+    If IsNull(selectedValue) Or selectedValue = "" Then
+        MsgBox "Please select a valid country.", vbExclamation
+        Exit Sub
+    End If
+    
+    Set rs = CurrentDb.OpenRecordset("SELECT * FROM CountriesT_New WHERE COUNTRY = '" & selectedValue & "'", dbOpenSnapshot)
+    
+    ' Update the rowsource of the vendor combo box
+    If Not rs.EOF Then
+        msgText = Nz(rs!OVF_OperationalNotes, "Selected country does not have operational procedures.")
+        MsgBox msgText, vbInformation, "Operational Procedures"
+        
+        ' Set the RowSource for the specific vendor combo box
+        vendorComboBox.RowSource = "SELECT Vendor FROM vendorsT WHERE Permits = " & SelectedVendors & " OR AllServices = " & SelectedVendors
+    Else
+        MsgBox "Selected country does not have operational procedures.", vbInformation, "Operational Procedures"
+        vendorComboBox.RowSource = "" ' Clear the vendor combo box if no operational procedures
+    End If
+
+CleanUp:
+    If Not rs Is Nothing Then rs.Close
+    Set rs = Nothing
+    Exit Sub
+End Sub
+Private Sub Form_Load()
+    Dim selectedRefNo As Variant
+    Dim SectorNoCmbQ As String
+    Dim CurrentForm As Form
+
+    Set CurrentForm = Forms("FlightSupport_LASTFORM_New_V12").Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form
+    
+    selectedRefNo = CurrentForm.Form.Controls("RequestRefNo").Value
+    SectorNoCmbQ = "Select SectorNo, Sect_ID FROM FlightSupport_SectorsT_New_V12 WHERE FlightRefNo = '" & selectedRefNo & "' And SectorStatus = 'Active' ORDER BY SectorNo ASC;"
+
+    CurrentForm.Controls("FlightSupport_ServicesTabs").Controls("BriefsTabs").Form.Controls("Sect_ID1").RowSource = SectorNoCmbQ
+    CurrentForm.Controls("FlightSupport_ServicesTabs").Controls("BriefsTabs").Form.Controls("Sect_ID2").RowSource = SectorNoCmbQ
+    CurrentForm.Controls("FlightSupport_ServicesTabs").Controls("BriefsTabs").Form.Controls("Sect_ID3").RowSource = SectorNoCmbQ
+    CurrentForm.Controls("FlightSupport_ServicesTabs").Controls("BriefsTabs").Form.Controls("Sect_ID4").RowSource = SectorNoCmbQ
+    CurrentForm.Controls("FlightSupport_ServicesTabs").Controls("BriefsTabs").Form.Controls("Sect_ID5").RowSource = SectorNoCmbQ
+    Me.Refresh
+End Sub
+Private Sub AddPermit_Click()
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    Dim strSQL As String
+    Dim Service As String, Vendor As String, ServiceStatus As String, PaymentMethod As String
+    Dim PermitNo As Variant, Sect_ID As Variant, PermitType As String, PermitValidity As String
+    Dim i As Integer ' Declare Loop control variable
+
+    Set db = CurrentDb
+    Set rs = db.OpenRecordset("PermitBriefT_New", dbOpenDynaset)
+
+    ' Loop through the sets of text boxes And add records
+    For i = 1 To 5 ' Change 5 To the desired number of services
+
+        ' Retrieve values from text boxes
+        Service = Nz(Me.Controls("CountriesCmb" & i).Value, "")
+        Vendor = Nz(Me.Controls("Vendor" & i).Value, "")
+        ServiceStatus = Nz(Me.Controls("ServiceStatus" & i).Value, "")
+        PaymentMethod = Nz(Me.Controls("PaymentMethod" & i).Value, "")
+        PermitType = Nz(Me.Controls("PermitType" & i).Value, "")
+        PermitNo = Nz(Me.Controls("PermitNumber" & i).Value, "")
+        Sect_ID = Nz(Me.Controls("Sect_ID" & i).Value, "") ' Correct reference
+        PermitValidity = Nz(Me.Controls("PermitValidity" & i).Value, "")
+        ' Check If at least one field is Not empty
+        If Service <> "" Or Vendor <> "" Or ServiceStatus <> "" Or PermitType <> "" Or PaymentMethod <> "" Or Sect_ID <> "" Then
+            ' Check If a record With the same Service And Sect_ID already exists
+        If DCount("*", "PermitBriefT_New", "Country_Location = '" & Service & "' And Sect_ID = " & Sect_ID & " And PermitType = '" & PermitType & "'") > 0 Then
+            MsgBox "A record with the same Service, Sect_ID, and PermitType already exists.", vbExclamation, "Duplicate Record"
+            Exit Sub ' Exit the Sub if duplicate found
+        Else
+
+                ' Add a record
+                rs.AddNew
+                ' Assign values To the fields in the table
+                rs.Fields("Country_Location").Value = Service
+                rs.Fields("Vendor").Value = Vendor
+                rs.Fields("PermitStatus").Value = ServiceStatus
+                rs.Fields("PaymentMethod").Value = PaymentMethod
+                rs.Fields("PermitType").Value = PermitType
+                rs.Fields("PermitNumber").Value = PermitNo
+                rs.Fields("PermitValidity").Value = PermitValidity
+                rs.Fields("Sect_ID").Value = Me.Controls("Sect_ID" & i).Column(1) ' Access Column(1)
+                rs.Update
+            End If
+        End If
+
+        ' Clear the text boxes after adding a record
+        Me.Controls("CountriesCmb" & i).Value = Null
+        Me.Controls("Vendor" & i).Value = Null
+        Me.Controls("ServiceStatus" & i).Value = Null
+        Me.Controls("PaymentMethod" & i).Value = Null
+        Me.Controls("PermitType" & i).Value = Null
+        Me.Controls("PermitNumber" & i).Value = Null
+        Me.Controls("PermitValidity" & i).Value = Null
+        Me.Controls("Sect_ID" & i).Value = Null
+    Next i
+
+    ' Clean up
+    rs.Close
+    Set rs = Nothing
+    Set db = Nothing
+    MsgBox "Service records added successfully.", vbInformation
+End Sub
+
+Private Sub PaymentMethod1_GotFocus()
+Me.PaymentMethod1.Value = "ON TAS CREDIT"
+End Sub
+Private Sub PaymentMethod2_GotFocus()
+Me.PaymentMethod2.Value = Me.PaymentMethod1.Value
+End Sub
+Private Sub PaymentMethod3_GotFocus()
+Me.PaymentMethod3.Value = Me.PaymentMethod2.Value
+End Sub
+Private Sub PaymentMethod4_GotFocus()
+Me.PaymentMethod4.Value = Me.PaymentMethod3.Value
+End Sub
+Private Sub PaymentMethod5_GotFocus()
+Me.PaymentMethod5.Value = Me.PaymentMethod4.Value
+End Sub
+Private Sub PermitType2_GotFocus()
+Me.PermitType2.Value = Me.PermitType1.Value
+End Sub
+Private Sub PermitType3_GotFocus()
+Me.PermitType3.Value = Me.PermitType2.Value
+End Sub
+Private Sub PermitType4_GotFocus()
+Me.PermitType4.Value = Me.PermitType3.Value
+End Sub
+Private Sub PermitType5_GotFocus()
+Me.PermitType5.Value = Me.PermitType4.Value
+End Sub
+Private Sub Sect_ID2_GotFocus()
+    Me.Sect_ID2.Value = Me.Sect_ID1.Value
+End Sub
+Private Sub Sect_ID3_GotFocus()
+    Me.Sect_ID3.Value = Me.Sect_ID2.Value
+End Sub
+Private Sub Sect_ID4_GotFocus()
+    Me.Sect_ID4.Value = Me.Sect_ID3.Value
+End Sub
+Private Sub Sect_ID5_GotFocus()
+    Me.Sect_ID5.Value = Me.Sect_ID4.Value
+End Sub
+Private Sub ServiceStatus2_GotFocus()
+    Me.ServiceStatus2.Value = Me.ServiceStatus1.Value
+End Sub
+Private Sub ServiceStatus3_GotFocus()
+    Me.ServiceStatus3.Value = Me.ServiceStatus2.Value
+End Sub
+Private Sub ServiceStatus4_GotFocus()
+    Me.ServiceStatus4.Value = Me.ServiceStatus3.Value
+End Sub
+Private Sub ServiceStatus5_GotFocus()
+    Me.ServiceStatus5.Value = Me.ServiceStatus4.Value
+End Sub
+Private Sub ResetBtn_Click()
+    Dim i As Integer
+    
+    ' Loop through the indices for the controls
+    For i = 1 To 5 ' Adjust this range based on the number of sets you have
+        Me.Controls("CountriesCmb" & i).Value = Null
+        Me.Controls("PermitType" & i).Value = Null
+        Me.Controls("ServiceStatus" & i).Value = Null
+        Me.Controls("PaymentMethod" & i).Value = Null
+        Me.Controls("PermitNumber" & i).Value = Null
+    Next i
+End Sub
+Private Sub Vendor2_GotFocus()
+    Me.Vendor2.Value = Me.Vendor1.Value
+End Sub
+Private Sub Vendor3_GotFocus()
+    Me.Vendor3.Value = Me.Vendor2.Value
+End Sub
+Private Sub Vendor4_GotFocus()
+    Me.Vendor4.Value = Me.Vendor3.Value
+End Sub
+Private Sub Vendor5_GotFocus()
+    Me.Vendor5.Value = Me.Vendor4.Value
+End Sub
+
+/////////////////////////////////////////////////
+Private Sub Operationalprocedures_sub(selectedValue As Variant, vendorComboBox As ComboBox)
+    Dim rs As DAO.Recordset
+    Dim msgText As String
+    
+    ' Validate input
+    If IsNull(selectedValue) Or selectedValue = "" Then
+        MsgBox "Please select a valid country.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Open recordset to check for operational procedures
+    Set rs = CurrentDb.OpenRecordset("SELECT * FROM CountriesT_New WHERE COUNTRY = '" & selectedValue & "'", dbOpenSnapshot)
+    
+    ' Update the rowsource of the vendor combo box
+    If Not rs.EOF Then
+        msgText = Nz(rs!OVF_OperationalNotes, "Selected country does not have operational procedures.")
+        MsgBox msgText, vbInformation, "Operational Procedures"
+        
+        ' Set the RowSource for the specific vendor combo box
+        vendorComboBox.RowSource = "SELECT Vendors.VendorID, Vendors.VendorName " & _
+                                   "FROM Vendors " & _
+                                   "INNER JOIN VendorCountries ON Vendors.VendorID = VendorCountries.VendorID " & _
+                                   "INNER JOIN CountriesT_New ON VendorCountries.CountryID = CountriesT_New.CountryID " & _
+                                   "WHERE CountriesT_New.COUNTRY = '" & selectedValue & "' " & _
+                                   "ORDER BY Vendors.VendorName;"
+    Else
+        MsgBox "Selected country does not have operational procedures.", vbInformation, "Operational Procedures"
+        vendorComboBox.RowSource = "" ' Clear the vendor combo box if no operational procedures
+    End If
+
+CleanUp:
+    If Not rs Is Nothing Then rs.Close
+    Set rs = Nothing
+    Exit Sub
+End Sub
