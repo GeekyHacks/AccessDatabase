@@ -1,88 +1,216 @@
-Private Sub btnRefresh_Click()
-    On Error Goto ErrorHandler
+Private Sub EmailQuoteBtn_Click()
+    On Error GoTo ErrorHandler
 
-        ' Set the current form
-        Dim CurrentForm As Form
-        Set CurrentForm = Forms("FlightSupport_LASTFORM_New_V12").Form
+    If Not IsNull(Me.Quote_RefNotxt) Then
+        Dim strWhere As String
+        Dim InLeng As Long
 
-        ' Requery the main form's subforms
-        CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Requery
-        CurrentForm.Controls("FlightSupport_RequestF_New").Form.Requery
+        Const conJetDate = "\#dd\/mm\/yyyy\#"
 
-        ' Requery all combo boxes in the main form
-        RequeryComboBoxes CurrentForm
-
-        ' Requery all combo boxes in the subform FlightSupport_RequestF_New
-        RequeryComboBoxes CurrentForm.Controls("FlightSupport_RequestF_New").Form
-
-        ' Requery all combo boxes in the subform FlightSupport_AddUpdateRequestF
-        RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form
-
-        ' Requery all combo boxes in the nested subforms under FlightSupport_AddUpdateRequestF
-        RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form
-
-        ' Requery all combo boxes in the subforms under navigationbutton12 If they are visible
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_AddOriginF_Form") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_AddOriginF_Form").Form
+        If Not IsNull(Me.Quote_RefNotxt) Then
+            strWhere = strWhere & "([Quote_RefNo] Like '*" & Me.Quote_RefNotxt & "*') And "
         End If
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_AddDestinationF") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_AddDestinationF").Form
-        End If
+        Dim QRefNo As Variant
+        QRefNo = Me.Quote_RefNotxt.Value
 
-        ' Requery all combo boxes in the subforms under navigationbutton20 If they are visible
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_UpdateSectorsF_New") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_UpdateSectorsF_New").Form
-        End If
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_UpdateFuelBriefF") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_UpdateFuelBriefF").Form
-        End If
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_UpdateFuelReleaseF_New") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_UpdateFuelReleaseF_New").Form
-        End If
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_PermitsListF_New") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_PermitsListF_New").Form
-        End If
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_HandlingUpdateF") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_HandlingUpdateF").Form
-        End If
-        If IsControlVisible(CurrentForm, "FlightSupport_AddUpdateRequestF", "Add_UpdateRequestF", "FlightSupport_ConciergeBriefUpdateF") Then
-            RequeryComboBoxes CurrentForm.Controls("FlightSupport_AddUpdateRequestF").Form.Controls("Add_UpdateRequestF").Form.Controls("FlightSupport_ConciergeBriefUpdateF").Form
-        End If
+        InLeng = Len(strWhere) - 5
+        If InLeng <= 0 Then
+            MsgBox "No parameter specified. Generating report for all data...", vbCritical, "My Flight App"
+        Else
+            strWhere = Left$(strWhere, InLeng)
 
-        ' Refresh the main form
-        CurrentForm.Refresh
+            ' Apply the filter to the form
+            Me.Filter = strWhere
+            Me.FilterOn = True
 
-     Exit Sub
+            ' Extract values from the report
+            Dim AIRPORT As String
+            Dim clientID As String
+            Dim recipientEmail As String
+            Dim fileName As String
+            Dim rs As DAO.Recordset
 
- ErrorHandler:
-        ' Handle the error And continue
-     Resume Next
+            Set rs = CurrentDb.OpenRecordset("SELECT DISTINCT Airport FROM FuelSupport_FuelQuotationsT WHERE " & strWhere, dbOpenSnapshot)
+
+            AIRPORT = ""
+            Do While Not rs.EOF
+                ' Extract the first four characters from the airport name
+                AIRPORT = AIRPORT & Left(rs!AIRPORT, 4) & "_"
+                rs.MoveNext
+            Loop
+
+            ' Remove trailing underscores
+            If Len(AIRPORT) > 0 Then AIRPORT = Left(AIRPORT, Len(AIRPORT) - 1)
+
+            rs.Close
+            Set rs = Nothing
+
+            clientID = Me.ClientIDtxt.Value
+            recipientEmail = Nz(DLookup("PrimaryEmail", "CustomersT", "ID = " & clientID), "")
+
+            ' Construct the file name and sanitize it
+            fileName = SanitizeFileName(QRefNo & " " & AIRPORT & " " & clientID & ".pdf")
+
+            ' Debugging: Show the file name
+            LogToFile "File Name: " & fileName
+
+            ' Open a file dialog to select the path
+            Dim fd As FileDialog
+            Set fd = Application.FileDialog(msoFileDialogFolderPicker)
+            Dim filePath As String
+
+            With fd
+                .Title = "Select Folder"
+                .AllowMultiSelect = False
+                If .Show = -1 Then
+                    filePath = .SelectedItems(1) & "\" & fileName
+                    ' Debugging: Show the selected file path
+                    LogToFile "Selected File Path: " & filePath
+                Else
+                    MsgBox "No folder selected. Operation cancelled.", vbExclamation
+                    Exit Sub
+                End If
+            End With
+
+            ' Apply the filter to the report before exporting
+            DoCmd.OpenReport "FuelSupport_FuelQuote", acViewPreview, , strWhere
+            DoCmd.OutputTo acOutputReport, "FuelSupport_FuelQuote", acFormatPDF, filePath, False
+            DoCmd.Close acReport, "FuelSupport_FuelQuote"
+
+            ' Debugging: Confirm report export
+            LogToFile "Report exported successfully to: " & filePath
+
+            If recipientEmail <> "" Then
+                ' Find the specific email in Outlook based on searchSubject and recipientEmail
+                Dim olApp As Object
+                Dim olNamespace As Object
+                Dim olFolder As Object
+                Dim olMailItem As Object
+                Dim olReply As Object
+                Dim foundEmail As Boolean
+                Dim searchSubject As String
+
+                ' Construct the search subject (e.g., "12345")
+                searchSubject = CStr(Me.R_RefNo)
+                LogToFile "Searching for emails with subject containing: " & searchSubject
+
+                Set olApp = CreateObject("Outlook.Application")
+                Set olNamespace = olApp.GetNamespace("MAPI")
+                Set olFolder = olNamespace.GetDefaultFolder(6) ' 6 = Inbox folder
+
+                ' Log the folder being searched
+                LogToFile "Searching in folder: " & olFolder.Name
+
+                ' Log the current user's email
+                Dim currentUserEmail As String
+                currentUserEmail = olNamespace.CurrentUser.AddressEntry.GetExchangeUser().PrimarySmtpAddress
+                LogToFile "Current user email: " & currentUserEmail
+
+                ' Log the subject of the last email in the inbox
+                If olFolder.Items.Count > 0 Then
+                    LogToFile "Last email subject in inbox: " & olFolder.Items(olFolder.Items.Count).Subject
+                Else
+                    LogToFile "Inbox is empty."
+                End If
+
+                foundEmail = False
+
+                ' Loop through emails in the Inbox to find the specific email
+                For Each olMailItem In olFolder.Items
+                    ' Check if the item is a mail item
+                    If olMailItem.Class = 43 Then ' 43 = olMail
+                        ' Log the subject and sender of the current email
+                        LogToFile "Checking email - Subject: " & olMailItem.Subject & ", Sender: " & olMailItem.SenderEmailAddress
+
+                        ' Check for the specific email based on sender
+                        If LCase(olMailItem.SenderEmailAddress) = LCase(recipientEmail) Then
+                            ' Check for the specific email based on subject
+                            If InStr(olMailItem.Subject, searchSubject) > 0 Then
+                                ' Reply-all to the email
+                                Set olReply = olMailItem.ReplyAll
+                                With olReply
+                                   ' .SentOnBehalfOfName = "occ@tahseenaviation.com"
+                                    .CC = "Abdullah@tahseenaviation.com" ' Replace with your email
+                                    .Attachments.Add filePath
+                                    .Body = "Dear On Duty, " & vbCrLf & vbCrLf & _
+                                            "Thank you for your inquiry and for choosing Tahseen Aviation Services." & vbCrLf & vbCrLf & _
+                                            "Tahseen Fuels Quote #" & QRefNo & " has been forwarded to your email address. We kindly request that you send us the confirmed flight details to proceed with the order." & vbCrLf & vbCrLf & _
+                                            "Please do not hesitate to contact us if you have any further fuel requests or inquiries." & vbCrLf & vbCrLf & _
+                                            "Kind Regards," & vbCrLf & .Body
+                                    .Send
+                                End With
+
+                                foundEmail = True
+                                Exit For
+                            End If
+                        End If
+                    End If
+                Next olMailItem
+
+                If foundEmail Then
+                    MsgBox "Reply-all email sent with the attached quote.", vbInformation, "Email Sent"
+                    LogToFile "Reply-all email sent to: " & recipientEmail & " with CC to occ@tahseenaviation.com and your_email@domain.com"
+                Else
+                    MsgBox "No matching email found in the Inbox. Please reply to the email manually with the correct R_RefNo.", vbExclamation, "Email Error"
+                    LogToFile "No matching email found in the Inbox for R_RefNo: " & searchSubject
+                End If
+            Else
+                MsgBox "Client email not found.", vbExclamation, "Email Error"
+                LogToFile "Client email not found for ClientID: " & clientID
+            End If
+
+            ' The file is now saved permanently at the selected file path
+            ' No need to delete it using Kill filePath
+        End If
+    Else
+        DoCmd.OpenForm "FuelSupport_ReportGeneratorF", WindowMode:=acWindowNormal
+    End If
+
+    Exit Sub
+
+ErrorHandler:
+    If Err.Number = 2501 Then
+        MsgBox "The OutputTo action was canceled. Please ensure the report is properly generated and the file path is correct.", vbExclamation, "Error"
+        LogToFile "Error 2501: The OutputTo action was canceled."
+    Else
+        MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
+        LogToFile "Error " & Err.Number & ": " & Err.Description
+    End If
 End Sub
 
-Private Sub RequeryComboBoxes(frm As Form)
-    Dim ctrl As Control
-    For Each ctrl In frm.Controls
-        If ctrl.ControlType = acComboBox Then
-            ctrl.Requery
-        End If
-        ' Check If the control is a subform And requery its combo boxes
-        If ctrl.ControlType = acSubform Then
-            RequeryComboBoxes ctrl.Form
-        End If
-    Next ctrl
-End Sub
+' Function to sanitize file names by replacing invalid characters with underscores
+Function SanitizeFileName(fileName As String) As String
+    Dim invalidChars As String
+    Dim i As Integer
 
-Private Function IsControlVisible(frm As Form, ParamArray ctrlNames() As Variant) As Boolean
-    On Error Goto ErrorHandler
-        Dim ctrl As Control
-        Set ctrl = frm
-        Dim i As Integer
-        For i = LBound(ctrlNames) To UBound(ctrlNames)
-            Set ctrl = ctrl.Controls(ctrlNames(i))
-        Next i
-        IsControlVisible = ctrl.Visible
-     Exit Function
+    ' List of invalid characters in file names
+    invalidChars = "\/:*?""<>|"
 
- ErrorHandler:
-        IsControlVisible = False
+    ' Replace each invalid character with an underscore
+    For i = 1 To Len(invalidChars)
+        fileName = Replace(fileName, Mid(invalidChars, i, 1), "_")
+    Next i
+
+    ' Return the sanitized file name
+    SanitizeFileName = fileName
 End Function
+
+Private Sub LogToFile(message As String)
+    Dim filePath As String
+    Dim fileNumber As Integer
+
+    ' Specify the path to the log file
+    filePath = "E:\ent\DebugLog.txt" ' Change this to your desired path
+
+    ' Get the next available file number
+    fileNumber = FreeFile
+
+    ' Open the file for appending
+    Open filePath For Append As #fileNumber
+
+    ' Write the message to the file
+    Print #fileNumber, Now() & " - " & message
+
+    ' Close the file
+    Close #fileNumber
+End Sub
