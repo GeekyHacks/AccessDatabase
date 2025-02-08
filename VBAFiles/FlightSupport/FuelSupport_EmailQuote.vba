@@ -1,213 +1,164 @@
 Private Sub EmailQuoteBtn_Click()
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
 
-        If Not IsNull(Me.Quote_RefNotxt) Then
-            Dim strWhere As String
-            Dim InLeng As Long
+    ' Validate input
+    If IsNull(Me.Quote_RefNotxt) Or Me.Quote_RefNotxt = "" Then
+        MsgBox "Quote Reference Number is required.", vbExclamation
+        Exit Sub
+    End If
 
-            Const conJetDate = "\#dd\/mm\/yyyy\#"
+    ' Sanitize input
+    Dim sanitizedQuoteRefNo As String
+    sanitizedQuoteRefNo = Replace(Me.Quote_RefNotxt, "'", "''")
 
-            If Not IsNull(Me.Quote_RefNotxt) Then
-                strWhere = strWhere & "([Quote_RefNo] Like '*" & Me.Quote_RefNotxt & "*') And "
-            End If
-            Dim QRefNo As Variant
-            QRefNo = Me.Quote_RefNotxt.Value
+    ' Construct filter
+    Dim strWhere As String
+    strWhere = "([Quote_RefNo] Like '*" & sanitizedQuoteRefNo & "*') And "
+    strWhere = Left$(strWhere, Len(strWhere) - 5)
 
-            InLeng = Len(strWhere) - 5
-            If InLeng <= 0 Then
-                MsgBox "No parameter specified. Generating report For all data...", vbCritical, "My Flight App"
-            Else
-                strWhere = Left$(strWhere, InLeng)
+    ' Apply filter to the form
+    Me.Filter = strWhere
+    Me.FilterOn = True
 
-                ' Apply the filter To the form
-                Me.Filter = strWhere
-                Me.FilterOn = True
+    ' Extract values from the report
+    Dim AIRPORT As String
+    Dim clientID As String
+    Dim recipientEmail As String
+    Dim fileName As String
+    Dim rs As DAO.Recordset
 
-                ' Extract values from the report
-                Dim AIRPORT As String
-                Dim clientID As String
-                Dim recipientEmail As String
-                Dim fileName As String
-                Dim rs As DAO.Recordset
+    ' Use parameterized query to prevent SQL injection
+    Dim qdf As DAO.QueryDef
+    Set qdf = CurrentDb.CreateQueryDef("", "SELECT DISTINCT Airport FROM FuelSupport_FuelQuotationsT WHERE [Quote_RefNo] Like @QuoteRefNo")
+    qdf.Parameters("@QuoteRefNo").Value = "*" & Me.Quote_RefNotxt & "*"
+    Set rs = qdf.OpenRecordset(dbOpenSnapshot)
 
-                Set rs = CurrentDb.OpenRecordset("Select DISTINCT Airport FROM FuelSupport_FuelQuotationsT WHERE " & strWhere, dbOpenSnapshot)
+    AIRPORT = ""
+    Do While Not rs.EOF
+        AIRPORT = AIRPORT & Left(rs!AIRPORT, 4) & "_"
+        rs.MoveNext
+    Loop
 
-                AIRPORT = ""
-                Do While Not rs.EOF
-                    ' Extract the first four characters from the airport name
-                    AIRPORT = AIRPORT & Left(rs!AIRPORT, 4) & "_"
-                    rs.MoveNext
-                Loop
+    ' Remove trailing underscores
+    If Len(AIRPORT) > 0 Then AIRPORT = Left(AIRPORT, Len(AIRPORT) - 1)
 
-                ' Remove trailing underscores
-                If Len(AIRPORT) > 0 Then AIRPORT = Left(AIRPORT, Len(AIRPORT) - 1)
+    rs.Close
+    Set rs = Nothing
 
-                    rs.Close
-                    Set rs = Nothing
+    ' Get client email
+    clientID = Me.ClientIDtxt.Value
+    recipientEmail = Nz(DLookup("PrimaryEmail", "CustomersT", "ID = " & clientID), "")
 
-                    clientID = Me.ClientIDtxt.Value
-                    recipientEmail = Nz(DLookup("PrimaryEmail", "CustomersT", "ID = " & clientID), "")
+    ' Construct and sanitize file name
+    fileName = SanitizeFileName(Me.Quote_RefNotxt & " " & AIRPORT & " " & clientID & ".pdf")
 
-                    ' Construct the file name And sanitize it
-                    fileName = SanitizeFileName(QRefNo & " " & AIRPORT & " " & clientID & ".pdf")
+    ' Open file dialog to select path
+    Dim fd As fileDialog
+    Set fd = Application.fileDialog(msoFileDialogFolderPicker)
+    Dim filePath As String
 
-                    ' Debugging: Show the file name
-                    LogToFile "File Name: " & fileName
+    With fd
+        .Title = "Select Folder"
+        .AllowMultiSelect = False
+        If .Show = -1 Then
+            filePath = .SelectedItems(1) & "\" & fileName
+        Else
+            MsgBox "No folder selected. Operation cancelled.", vbExclamation
+            Exit Sub
+        End If
+    End With
 
-                    ' Open a file dialog To Select the path
-                    Dim fd As fileDialog
-                    Set fd = Application.fileDialog(msoFileDialogFolderPicker)
-                    Dim filePath As String
+    ' Export report to PDF
+    DoCmd.OpenReport "FuelSupport_FuelQuote", acViewPreview, , strWhere
+    DoCmd.OutputTo acOutputReport, "FuelSupport_FuelQuote", acFormatPDF, filePath, False
+    DoCmd.Close acReport, "FuelSupport_FuelQuote"
 
-                    With fd
-                        .Title = "Select Folder"
-                        .AllowMultiSelect = False
-                        If .Show = -1 Then
-                            filePath = .SelectedItems(1) & "\" & fileName
-                            ' Debugging: Show the selected file path
-                            LogToFile "Selected File Path: " & filePath
-                        Else
-                            MsgBox "No folder selected. Operation cancelled.", vbExclamation
-                         Exit Sub
-                        End If
-                    End With
+    ' Send email if recipient is found
+    If recipientEmail <> "" Then
+        Dim olApp As Object
+        Dim olNamespace As Object
+        Dim olFolder As Object
+        Dim olMailItem As Object
+        Dim olReply As Object
+        Dim foundEmail As Boolean
+        Dim searchSubject As String
+        Dim lastMatchingEmail As Object ' To store the last matching email
 
-                    ' Apply the filter To the report before exporting
-                    DoCmd.OpenReport "FuelSupport_FuelQuote", acViewPreview, , strWhere
-                    DoCmd.OutputTo acOutputReport, "FuelSupport_FuelQuote", acFormatPDF, filePath, False
-                    DoCmd.Close acReport, "FuelSupport_FuelQuote"
+        searchSubject = CStr(Me.R_RefNo)
 
-                    ' Debugging: Confirm report export
-                    LogToFile "Report exported successfully To: " & filePath
+        Set olApp = CreateObject("Outlook.Application")
+        Set olNamespace = olApp.GetNamespace("MAPI")
+        Set olFolder = olNamespace.GetDefaultFolder(6) ' Inbox folder
 
-                    If recipientEmail <> "" Then
-                        ' Find the specific email in Outlook based on searchSubject
-                        Dim olApp As Object
-                        Dim olNamespace As Object
-                        Dim olFolder As Object
-                        Dim olMailItem As Object
-                        Dim olReply As Object
-                        Dim foundEmail As Boolean
-                        Dim searchSubject As String
+        foundEmail = False
+        Set lastMatchingEmail = Nothing ' Initialize to Nothing
 
-                        ' Construct the search subject (e.g., "12345")
-                        searchSubject = CStr(Me.R_RefNo)
-                        LogToFile "Searching For emails With subject containing: " & searchSubject
-
-                        Set olApp = CreateObject("Outlook.Application")
-                        Set olNamespace = olApp.GetNamespace("MAPI")
-                        Set olFolder = olNamespace.GetDefaultFolder(6) ' 6 = Inbox folder
-
-                        ' Log the folder being searched
-                        LogToFile "Searching in folder: " & olFolder.Name
-
-                        ' Log the current user's email
-                        Dim currentUserEmail As String
-                        currentUserEmail = olNamespace.CurrentUser.AddressEntry.GetExchangeUser().PrimarySmtpAddress
-                        LogToFile "Current user email: " & currentUserEmail
-
-                        ' Log the subject of the last email in the inbox
-                        If olFolder.Items.Count > 0 Then
-                            Dim lastEmail As Object
-                            Set lastEmail = olFolder.Items(olFolder.Items.Count)
-                            LogToFile "Last email subject in inbox: " & lastEmail.Subject & ", Sender: " & lastEmail.SenderEmailAddress & ", Receiver: " & lastEmail.To
-                        Else
-                            LogToFile "Inbox is empty."
-                        End If
-
-                        foundEmail = False
-
-                        ' Loop through emails in the Inbox To find the specific email
-                        For Each olMailItem In olFolder.Items
-                            ' Check If the item is a mail item
-                            If olMailItem.Class = 43 Then ' 43 = olMail
-                                ' Check For the specific email based on subject
-                                If InStr(olMailItem.Subject, searchSubject) > 0 Then
-                                    ' Reply-all To the email
-                                    Set olReply = olMailItem.ReplyAll
-                                    With olReply
-                                        ' .SentOnBehalfOfName = "occ@tahseenaviation.com"
-                                        .CC = "Abdullah@tahseenaviation.com" ' Replace With your email
-                                        .Attachments.Add filePath
-                                        .Body = "Dear On Duty, " & vbCrLf & vbCrLf & _
-                                        "Thank you For your inquiry And For choosing Tahseen Aviation Services." & vbCrLf & vbCrLf & _
-                                        "Tahseen Fuels Quote #" & QRefNo & " has been forwarded To your email address. We kindly request that you send us the confirmed flight details To proceed With the order." & vbCrLf & vbCrLf & _
-                                        "Please Do Not hesitate To contact us If you have any further fuel requests Or inquiries." & vbCrLf & vbCrLf & _
-                                        "Kind Regards," & vbCrLf & .Body
-                                        .Send
-                                    End With
-
-                                    foundEmail = True
-                                 Exit For
-                                End If
-                            End If
-                        Next olMailItem
-
-                        If foundEmail Then
-                            MsgBox "Reply-all email sent With the attached quote.", vbInformation, "Email Sent"
-                            LogToFile "Reply-all email sent To: " & recipientEmail & " With CC To occ@tahseenaviation.com And your_email@domain.com"
-                        Else
-                            MsgBox "No matching email found in the Inbox. Please reply To the email manually With the correct R_RefNo.", vbExclamation, "Email Error"
-                            LogToFile "No matching email found in the Inbox For R_RefNo: " & searchSubject
-                        End If
-                    Else
-                        MsgBox "Client email Not found.", vbExclamation, "Email Error"
-                        LogToFile "Client email Not found For ClientID: " & clientID
-                    End If
-
-                    ' The file is now saved permanently at the selected file path
-                    ' No need To delete it using Kill filePath
+        ' Loop through emails in the Inbox to find the last matching email
+        For Each olMailItem In olFolder.Items
+            If olMailItem.Class = 43 Then ' olMail
+                If InStr(olMailItem.Subject, searchSubject) > 0 Then
+                    ' Store the last matching email
+                    Set lastMatchingEmail = olMailItem
+                    foundEmail = True
                 End If
-            Else
-                DoCmd.OpenForm "FuelSupport_ReportGeneratorF", WindowMode:=acWindowNormal
             End If
+        Next olMailItem
 
-         Exit Sub
+        ' If a matching email was found, reply to the last one
+        If foundEmail And Not lastMatchingEmail Is Nothing Then
+            Set olReply = lastMatchingEmail.ReplyAll
+            With olReply
+            ' .SentOnBehalfOfName = "occ@tahseenaviation.com"
+                .CC = "Abdullah@tahseenaviation.com" ' Replace with dynamic value
+                .Attachments.Add filePath
+                .HTMLBody = "Dear On Duty, " & "<br><br>" & _
+                            "Thank you for your inquiry and for choosing Tahseen Aviation Services." & "<br><br>" & _
+                            "Tahseen Fuels Quote #" & Me.Quote_RefNotxt & " for " & AIRPORT & " has been forwarded to your email address. We kindly request that you send us the confirmed flight details to proceed with the order." & "<br><br>" & _
+                            "Please do not hesitate to contact us if you have any further fuel requests or inquiries." & "<br><br>" & _
+                            "Kind Regards," & "<br>" & .HTMLBody
+                If MsgBox("Are you sure you want to send this email?", vbYesNo + vbQuestion) = vbYes Then
+                    .Send
+                End If
+            End With
 
- ErrorHandler:
-            If Err.Number = 2501 Then
-                MsgBox "The OutputTo action was canceled. Please ensure the report is properly generated And the file path is correct.", vbExclamation, "Error"
-                LogToFile "Error 2501: The OutputTo action was canceled."
-            Else
-                MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
-                LogToFile "Error " & Err.Number & ": " & Err.Description
-            End If
+            MsgBox "Reply-all email sent with the attached quote.", vbInformation, "Email Sent"
+        Else
+            MsgBox "No matching email found in the Inbox. Please reply to the email manually with the correct Quote Reference Number.", vbExclamation, "Email Error"
+        End If
+    Else
+        MsgBox "Client email not found.", vbExclamation, "Email Error"
+    End If
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
+    LogToFile "Error in EmailQuoteBtn_Click: " & Err.Description
 End Sub
 
-' Function To sanitize file names by replacing invalid characters With underscores
+' Function to sanitize file names
 Function SanitizeFileName(fileName As String) As String
     Dim invalidChars As String
     Dim i As Integer
 
-    ' List of invalid characters in file names
     invalidChars = "\/:*?""<>|"
-
-    ' Replace each invalid character With an underscore
     For i = 1 To Len(invalidChars)
         fileName = Replace(fileName, Mid(invalidChars, i, 1), "_")
     Next i
 
-    ' Return the sanitized file name
     SanitizeFileName = fileName
 End Function
 
+' Function to log messages securely
 Private Sub LogToFile(message As String)
     Dim filePath As String
     Dim fileNumber As Integer
 
-    ' Specify the path To the log file
-    filePath = "E:\ent\DebugLog.txt" ' Change this To your desired path
-
-    ' Get the Next available file number
+    filePath = "C:\SecureLogs\DebugLog.txt" ' Change to a secure location
     fileNumber = FreeFile
 
-    ' Open the file For appending
     Open filePath For Append As #fileNumber
-
-    ' Write the message To the file
     Print #fileNumber, Now() & " - " & message
-
-    ' Close the file
     Close #fileNumber
 End Sub
 
