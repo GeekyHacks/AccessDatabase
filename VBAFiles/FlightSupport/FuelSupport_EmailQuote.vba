@@ -291,79 +291,7 @@ Function EmailMatchesRecipient(emailToField As String, recipientEmail As String)
 End Function
 
 //////////////////////////////////
-' sending seperate emails to primay & secondry emails 
-Private Sub ChangeQuoteStatus()
-    On Error Goto ErrorHandler
-        Dim FatherForm As Form
-        Dim db As DAO.Database
-        Dim rsX As DAO.Recordset
-        Dim rsY As DAO.Recordset
-        Dim strSQL As String
-        Dim QRequestRefNo As String ' Assuming QRequestRefNo is a string; change To Long If it's a number
-
-        ' Initialize database And recordsets
-        Set db = CurrentDb
-        Set FatherForm = Forms("FuelSupport_QuoteRequestF_V1").Form
-
-        ' Get the QuoteRequestRefNo value (replace this With your actual logic To Get the value)
-        QRequestRefNo = Me.R_RefNo ' Example: Get the value from a form control
-
-        ' Open Table Y (FuelSupport_FuelQuotationsT) With a filter For the specific QuoteRequestRefNo
-        Set rsY = db.OpenRecordset("Select * FROM FuelSupport_FuelQuotationsT WHERE QuoteRequestRefNo = '" & QRequestRefNo & "'", dbOpenDynaset)
-
-        ' Check If Table Y has records
-        If rsY.EOF And rsY.BOF Then
-            MsgBox "No records found in Table Y For QuoteRequestRefNo: " & QRequestRefNo, vbExclamation
-         Exit Sub
-        End If
-
-        ' Loop through Table Y And update Table X For matching locations
-        rsY.MoveFirst
-        Do While Not rsY.EOF
-            ' Open Table X With a filter For the current location And QuoteRequestRefNo
-            strSQL = "Select * FROM FuelSupport_RequestedLocationsT_V1 WHERE QuoteRequestRefNo = '" & QRequestRefNo & "' And Location = '" & rsY!AIRPORT & "'"
-            Set rsX = db.OpenRecordset(strSQL, dbOpenDynaset)
-
-            ' If a matching record is found, update Table X
-            If Not rsX.EOF And Not rsX.BOF Then
-                rsX.MoveFirst
-                Do While Not rsX.EOF
-                    rsX.Edit
-                    rsX!LocationQuoteStatus = "Sent"
-                    rsX!QuoteRefNo = rsY!Quote_RefNo '' Update values in Table X With QuoteStatus from Table Y
-                    rsX.Update
-                    rsX.MoveNext
-                Loop
-            End If
-
-            ' Close the Table X recordset For the current location
-            rsX.Close
-            Set rsX = Nothing
-
-            ' Move To the Next record in Table Y
-            rsY.MoveNext
-        Loop
-
-        ' Clean up
-        rsY.Close
-        Set rsY = Nothing
-        Set db = Nothing
-
-        MsgBox "Table X has been updated successfully For QuoteRequestRefNo: " & QRequestRefNo, vbInformation
-     Exit Sub
-
-        FatherForm.Controls("FuelSupport_LocationsListF").Form.Requery
-
- ErrorHandler:
-        MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
-        ' Clean up in Case of error
-        If Not rsX Is Nothing Then rsX.Close
-            If Not rsY Is Nothing Then rsY.Close
-                Set rsX = Nothing
-                Set rsY = Nothing
-                Set db = Nothing
-End Sub
-
+' sending seperate emails To primay & secondry emails 
 Private Sub EmailQuoteBtn_Click()
     On Error Goto ErrorHandler
 
@@ -451,6 +379,7 @@ Private Sub EmailQuoteBtn_Click()
                 Dim olApp As Object
                 Dim olMailItem As Object
                 Dim currentUserEmail As String
+                Dim signature As String
 
                 ' Initialize Outlook application
                 Set olApp = CreateObject("Outlook.Application")
@@ -460,21 +389,27 @@ Private Sub EmailQuoteBtn_Click()
                 currentUserEmail = olApp.Session.CurrentUser.AddressEntry.GetExchangeUser().PrimarySmtpAddress
                 LogToFile "Current user email: " & currentUserEmail
 
+                ' Get the current user's signature
+                signature = GetOutlookSignature(currentUserEmail, olMailItem)
+                'LogToFile "Signature retrieved: " & signature
+
                 ' Set email properties
                 With olMailItem
-                    .SentOnBehalfOfName = "occ@tahseenaviation.com" ' Send on behalf of OCC
+                    '.SentOnBehalfOfName = "occ@tahseenaviation.com" ' Send on behalf of OCC
                     .To = recipientEmail
-                    If secondaryEmail <> "" Then
-                        .To = .To & ";" & secondaryEmail ' Add secondary email To the "To" field
-                    End If
-                    .CC = currentUserEmail & ";occ@tahseenaviation.com" ' CC current user And OCC
-                    .Subject = "Tahseen Fuels Quote #" & Me.Quote_RefNotxt & " For " & AIRPORT
+                    'If secondaryEmail <> "" Then
+                    '    .To = .To & ";" & secondaryEmail ' Add secondary email To the "To" field
+                    'End If
+                    .CC = currentUserEmail '& ";occ@tahseenaviation.com" ' CC current user And OCC
+                    .Subject = "Tahseen Fuels Quote #" & Me.R_RefNo & " For " & AIRPORT
                     .Attachments.Add filePath
+
+                    ' Build the email body With the signature
                     .HTMLBody = "Dear On Duty, " & "<br><br>" & _
                     "Thank you For your inquiry And For choosing Tahseen Aviation Services." & "<br><br>" & _
                     "Tahseen Fuels Quote #" & Me.Quote_RefNotxt & " For " & AIRPORT & " has been forwarded To your email address. We kindly request that you send us the confirmed flight details To proceed With the order." & "<br><br>" & _
                     "Please Do Not hesitate To contact us If you have any further fuel requests Or inquiries." & "<br><br>" & _
-                    "<br>" & .HTMLBody
+                    "<br>" & signature ' Append the signature
 
                     ' Send the email after confirmation
                     If MsgBox("Are you sure you want To send this email?", vbYesNo + vbQuestion) = vbYes Then
@@ -498,6 +433,103 @@ Private Sub EmailQuoteBtn_Click()
             MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
             LogToFile "Error in EmailQuoteBtn_Click: " & Err.Description
 End Sub
+Function GetOutlookSignature(currentUserEmail As String, Byref olMailItem As Object) As String
+    On Error Goto ErrorHandler
+        ' Declare the olByValue constant
+        Const olByValue = 1
+
+        Dim signature As String
+        Dim signaturePath As String
+        Dim fso As Object
+        Dim ts As Object
+        Dim imgFolderPath As String
+        Dim imgFile As Object
+        Dim imgFiles As Object
+        Dim imgPattern As String
+        Dim imgSrc As String
+        Dim cid As String
+        Dim regex As Object, matches As Object
+
+        ' Get the path To the Outlook signature folder
+        signaturePath = Environ("AppData") & "\Microsoft\Signatures\"
+        LogToFile "Signature folder path: " & signaturePath
+
+        ' Construct the signature file name dynamically
+        Dim signatureName As String
+        signatureName = "OCC (" & currentUserEmail & ")" ' Format: OCC (currentuseremail)
+        LogToFile "Using signature file name: " & signatureName
+
+        ' Read the signature file
+        Set fso = CreateObject("Scripting.FileSystemObject")
+        If fso.FileExists(signaturePath & signatureName & ".htm") Then
+            Set ts = fso.OpenTextFile(signaturePath & signatureName & ".htm", 1) ' 1 = ForReading
+            signature = ts.ReadAll
+            ts.Close
+        Else
+            GetOutlookSignature = ""
+            LogToFile "Signature file Not found: " & signaturePath & signatureName & ".htm"
+         Exit Function
+        End If
+
+        ' Get the path To the signature's image folder
+        imgFolderPath = signaturePath & signatureName & "_files\"
+        LogToFile "Image folder path: " & imgFolderPath
+
+        ' Replace image references With CID attachments
+        If fso.FolderExists(imgFolderPath) Then
+            Set imgFiles = fso.GetFolder(imgFolderPath).Files
+            Set regex = CreateObject("VBScript.RegExp")
+            regex.Global = True
+            regex.IgnoreCase = True
+
+            For Each imgFile In imgFiles
+                'imgPattern = "<img[^>]*src=""" & imgFile.Name & """[^>]*>"
+                imgPattern = "<img[^>]*src=""([^""]*" & Replace(imgFile.Name, ".", "\.") & """)""[^>]*>" ' Modified pattern
+
+                regex.Pattern = imgPattern
+                If regex.Test(signature) Then
+                    Set matches = regex.Execute(signature)
+                    If matches.Count > 0 Then
+                        ' Attach the image To the email And generate a CID
+                        cid = "img" & imgFile.Name
+                        olMailItem.Attachments.Add imgFile.Path, 1, 0, cid
+
+                        ' Replace the image source With the CID reference
+                        imgSrc = "cid:" & cid
+                        signature = Replace(signature, matches(0).Value, "<img src=""" & imgSrc & """>") ' Replace the entire matched string
+                        ' LogToFile "Replaced image source: " & imgFile.Name & " With CID: " & imgSrc
+                    End If
+                End If
+            Next imgFile
+            Set regex = Nothing
+        End If
+
+        ' Clean up
+        Set ts = Nothing
+        Set fso = Nothing
+
+        GetOutlookSignature = signature
+     Exit Function
+
+ ErrorHandler:
+        ' Fallback: Return an empty string If the signature cannot be retrieved
+        GetOutlookSignature = ""
+        LogToFile "Error retrieving Outlook signature: " & Err.Description
+End Function
+Function BinaryToBase64(binaryData) As String
+    Dim xmlDoc As Object
+    Dim xmlNode As Object
+
+    Set xmlDoc = CreateObject("MSXML2.DOMDocument")
+    Set xmlNode = xmlDoc.createElement("b64")
+
+    xmlNode.DataType = "bin.base64"
+    xmlNode.nodeTypedValue = binaryData
+    BinaryToBase64 = xmlNode.Text
+
+    Set xmlNode = Nothing
+    Set xmlDoc = Nothing
+End Function
 
 ' Function To sanitize file names
 Function SanitizeFileName(fileName As String) As String
@@ -524,3 +556,4 @@ Private Sub LogToFile(message As String)
     Print #fileNumber, Now() & " - " & message
     Close #fileNumber
 End Sub
+
