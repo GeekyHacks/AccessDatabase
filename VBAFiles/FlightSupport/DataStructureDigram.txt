@@ -1,0 +1,106 @@
++-------------------+          +-------------------+          +-------------------+
+|     PARTIES       |          |     LOCATIONS     |          |     SERVICES      |
++-------------------+          +-------------------+          +-------------------+
+| ID (PK)           |<-------->| ID (PK)           |          | ID (PK)           |
+| NAME              |          | LOCATION_NAME     |          | SERVICE_NAME      |
+| CONTACT_NO        |          | ADDRESS           |          | DESCRIPTION       |
+| E_MAIL            |          | COUNTRY           |          | IS_ACTIVE         |
+| COUNTRY           |          | CITY              |          +-------------------+
+| CITY              |                     ^
+| IS_ACTIVE         |                     |
+| IS_DELETED        |                     |
+| CREATED_BY        |                     |
+| CREATE_DATE       |                     |
+| UPDATED_BY        |                     |
+| UPDATE_DATE       |                     |
+| DELETED_BY        |                     |
+| DELETE_DATE       |                     |
++-------------------+                     |
+        ^                                |
+        |                                |
+        |                                |
++-------------------+          +-------------------+
+|     ROLES         |          | PARTY_LOCATIONS   |
++-------------------+          +-------------------+
+| ID (PK)           |<-------->| PARTY_ID (PK, FK) |
+| ROLE_NAME         |          | LOCATION_ID (PK, FK)
++-------------------+          | IS_PRIMARY        |
+        ^                     +-------------------+
+        |
+        |
++-------------------+
+| PARTY_ROLES       |
++-------------------+
+| PARTY_ID (PK, FK) |
+| ROLE_ID (PK, FK)  |
++-------------------+
+
++-------------------+          +-------------------+
+|     CLIENTS       |          | VENDOR_SERVICES   |
++-------------------+          +-------------------+
+| PARTY_ID (PK, FK) |<-------->| VENDOR_ID (PK, FK)|
+| CREDIT_LIMIT      |          | SERVICE_ID (PK, FK)
+| CURRENCY_ID (FK)  |          | CURRENCY_ID (FK)  |
+| TRN_NO            |          | PAYMENT_TYPE_ID (FK)
+| VAT_NO            |          | COST              |
++-------------------+          | NOTES             |
+                              +-------------------+
+
++-------------------+          +-------------------+
+|     VENDORS       |          |     CURRENCIES    |
++-------------------+          +-------------------+
+| PARTY_ID (PK, FK) |          | ID (PK)           |
+| VENDOR_RATING     |          | CURRENCY_CODE     |
+| PAYMENT_TERMS     |          | CURRENCY_NAME     |
++-------------------+          | SYMBOL            |
+                              +-------------------+
+
++-------------------+          +-------------------+
+|     HANDLERS      |          |   PAYMENT_TYPES   |
++-------------------+          +-------------------+
+| PARTY_ID (PK, FK) |          | ID (PK)           |
+| HANDLER_TYPE      |          | PAYMENT_TYPE_NAME |
+| CERTIFICATION_NO  |          +-------------------+
++-------------------+
+
++-------------------+          +-------------------+
+|     AGENTS        |          |   AIRCRAFTS       |
++-------------------+          +-------------------+
+| PARTY_ID (PK, FK) |<-------->| ID (PK)           |
+| AGENCY_NAME       |          | AIRCRAFT_NAME     |
+| COMMISSION_RATE   |          | REGISTRATION_NO   |
++-------------------+          | CAPACITY          |
+                              +-------------------+
+
++-------------------+          +-------------------+
+|     OPERATORS     |          | SPECIALIZATIONS   |
++-------------------+          +-------------------+
+| PARTY_ID (PK, FK) |<-------->| ID (PK)           |
+| OPERATOR_TYPE     |          | SPECIALIZATION_NAME
+| CERTIFICATION_NO  |          +-------------------+
++-------------------+
+
++-------------------+
+| OPERATOR_SERVICES |
++-------------------+
+| OPERATOR_ID (PK, FK)
+| SERVICE_ID (PK, FK)
+| CURRENCY_ID (FK)  |
+| PAYMENT_TYPE_ID (FK)
+| COST              |
+| NOTES             |
++-------------------+
+
++-------------------+
+| OPERATOR_AIRCRAFTS|
++-------------------+
+| OPERATOR_ID (PK, FK)
+| AIRCRAFT_ID (PK, FK)
++-------------------+
+
++-------------------+
+| OPERATOR_SPECIALIZATIONS|
++-------------------+
+| OPERATOR_ID (PK, FK)
+| SPECIALIZATION_ID (PK, FK)
++-------------------+

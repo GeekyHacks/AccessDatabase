@@ -1,0 +1,1627 @@
+15-Feb-25 11:45:48 - Process started.
+15-Feb-25 11:45:48 - SQL code retrieved from the text box.
+15-Feb-25 11:45:48 - SQL code converted to Access-compatible SQL.
+15-Feb-25 11:45:48 - Table name extracted: PartiesT_New
+15-Feb-25 11:45:48 - Table 'PartiesT_New' does not exist.
+15-Feb-25 11:45:49 - Creating table 'PartiesT_New'...
+15-Feb-25 11:45:49 - Error: Invalid SQL statement; expected 'DELETE', 'INSERT', 'PROCEDURE', 'SELECT', or 'UPDATE'.
+15-Feb-25 11:52:33 - Process started.
+15-Feb-25 11:52:33 - SQL code retrieved from the text box.
+15-Feb-25 11:52:33 - SQL code converted to Access-compatible SQL.
+15-Feb-25 11:52:33 - Table name extracted: PartiesT_New
+15-Feb-25 11:52:33 - Table 'PartiesT_New' does not exist.
+15-Feb-25 11:52:34 - Creating table 'PartiesT_New'...
+15-Feb-25 11:52:34 - Error: The Microsoft Access database engine cannot find the input table or query 'PartiesT_New (
+    Id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);'. Make sure it exists and that its name
+15-Feb-25 11:56:47 - Process started.
+15-Feb-25 11:56:47 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 11:56:47 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id Long IDENTITY(1,1),
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 11:56:47 - Table name extracted: PartiesT_New
+15-Feb-25 11:56:47 - Table 'PartiesT_New' does not exist.
+15-Feb-25 11:56:47 - Creating table 'PartiesT_New'...
+15-Feb-25 11:56:47 - Error: The Microsoft Access database engine cannot find the input table or query 'PartiesT_New (
+    Id Long IDENTITY(1,1),
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);'. Make sure it exists and that its name is spelled corr
+15-Feb-25 11:58:49 - Process started.
+15-Feb-25 11:58:49 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 11:58:49 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id Long IDENTITY(1,1),
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 11:58:49 - Table name extracted: PartiesT_New
+15-Feb-25 11:58:49 - Table 'PartiesT_New' does not exist.
+15-Feb-25 11:58:50 - Creating table 'PartiesT_New'...
+15-Feb-25 11:58:50 - Error: The Microsoft Access database engine cannot find the input table or query 'PartiesT_New (
+    Id Long IDENTITY(1,1),
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)'. Make sure it exists and that its name is spelled corre
+15-Feb-25 11:59:08 - Process started.
+15-Feb-25 11:59:08 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 11:59:08 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 11:59:08 - Table name extracted: PartiesT_New
+15-Feb-25 11:59:08 - Table 'PartiesT_New' does not exist.
+15-Feb-25 11:59:09 - Creating table 'PartiesT_New'...
+15-Feb-25 11:59:09 - Error: The Microsoft Access database engine cannot find the input table or query 'PartiesT_New (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)'. Make sure it exists and that its name i
+15-Feb-25 12:00:14 - Process started.
+15-Feb-25 12:00:14 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:00:14 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:00:14 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:00:14 - Extracted table name: PartiesT_New
+15-Feb-25 12:00:14 - Table name extracted: PartiesT_New
+15-Feb-25 12:00:14 - TableExistsInDatabase: False
+15-Feb-25 12:00:14 - Table 'PartiesT_New' does not exist.
+15-Feb-25 12:00:15 - Creating table 'PartiesT_New'...
+15-Feb-25 12:00:15 - Error: The Microsoft Access database engine cannot find the input table or query 'PartiesT_New (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)'. Make sure it exists and that its name i
+15-Feb-25 12:02:43 - Process started.
+15-Feb-25 12:02:43 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:02:43 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:02:43 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:02:43 - Extracted table name: PartiesT_New
+15-Feb-25 12:02:43 - Table name extracted: PartiesT_New
+15-Feb-25 12:02:43 - TableExistsInDatabase: False
+15-Feb-25 12:02:43 - Table 'PartiesT_New' does not exist.
+15-Feb-25 12:02:44 - Creating table 'PartiesT_New'...
+15-Feb-25 12:02:44 - Error: The Microsoft Access database engine cannot find the input table or query 'PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)'. Make sure it exists and that its name is spel
+15-Feb-25 12:11:56 - Process started.
+15-Feb-25 12:11:56 - Error: Invalid use of Null
+15-Feb-25 12:13:10 - Process started.
+15-Feb-25 12:13:10 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:13:10 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:13:10 - TableExistsInDatabase: False
+15-Feb-25 12:13:11 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:13:11 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:15:39 - Process started.
+15-Feb-25 12:15:39 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:15:39 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:15:39 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:15:39 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:15:39 - TableExistsInDatabase: False
+15-Feb-25 12:15:40 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:15:40 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:19:26 - Process started.
+15-Feb-25 12:19:26 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:19:26 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:19:26 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:19:26 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:19:26 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:19:26 - TableExistsInDatabase: False
+15-Feb-25 12:19:28 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:19:28 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:21:37 - Process started.
+15-Feb-25 12:21:37 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:21:37 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:21:37 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:21:37 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:21:37 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:21:37 - TableExistsInDatabase: False
+15-Feb-25 12:21:38 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:21:38 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:24:49 - Process started.
+15-Feb-25 12:24:49 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:24:49 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:24:49 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:24:49 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:24:49 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:24:49 - TableExistsInDatabase: False
+15-Feb-25 12:24:50 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:24:50 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:25:03 - Process started.
+15-Feb-25 12:25:03 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:25:03 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:25:03 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:25:03 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:25:03 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:25:03 - TableExistsInDatabase: False
+15-Feb-25 12:25:04 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:25:04 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:26:05 - Process started.
+15-Feb-25 12:26:05 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:26:05 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:26:05 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:26:05 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:26:05 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:26:05 - TableExistsInDatabase: False
+15-Feb-25 12:26:06 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:26:06 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:29:09 - Process started.
+15-Feb-25 12:29:09 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:29:09 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:29:09 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:09 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:09 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:29:09 - TableExistsInDatabase: False
+15-Feb-25 12:29:10 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:10 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:29:19 - Process started.
+15-Feb-25 12:29:19 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:19 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:29:19 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:19 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:19 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:29:19 - TableExistsInDatabase: False
+15-Feb-25 12:29:20 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER PRIMARY KEY COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:29:20 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:30:58 - Process started.
+15-Feb-25 12:30:58 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT PRIMARY KEY AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:30:58 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:30:58 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:30:58 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:30:58 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:30:58 - TableExistsInDatabase: False
+15-Feb-25 12:30:59 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:30:59 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:31:14 - Process started.
+15-Feb-25 12:31:14 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:31:14 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:31:14 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:31:14 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:31:14 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:31:14 - TableExistsInDatabase: False
+15-Feb-25 12:31:15 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER AUTOINCREMENT,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:31:15 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:32:45 - Process started.
+15-Feb-25 12:32:45 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:32:45 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:32:45 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:32:45 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:32:45 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:32:45 - TableExistsInDatabase: False
+15-Feb-25 12:32:46 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:32:46 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:33:02 - Process started.
+15-Feb-25 12:33:02 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:33:02 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:33:02 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:33:02 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:33:02 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:33:02 - TableExistsInDatabase: False
+15-Feb-25 12:33:03 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 12:33:03 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 12:33:10 - Process started.
+15-Feb-25 12:33:10 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id INT AUTOINCREMENT,
+    Name VARCHAR(200) NOT NULL,
+    ContactNo VARCHAR(50) NOT NULL,
+    Email VARCHAR(200) NOT NULL,
+    Country INT,
+    City INT,
+    IsActive BOOLEAN,
+    IsDeleted BOOLEAN,
+    CreatedBy VARCHAR(200),
+    CreateDate DATETIME,
+    UpdatedBy VARCHAR(200),
+    UpdateDate DATETIME,
+    DeletedBy VARCHAR(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:33:10 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 12:33:10 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:33:10 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:33:10 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 12:33:10 - TableExistsInDatabase: False
+15-Feb-25 12:33:10 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id INTEGER COUNTER,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 12:33:10 - Error: Syntax error in CREATE TABLE statement.
+15-Feb-25 18:07:52 - Process started.
+15-Feb-25 18:07:52 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 18:07:52 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 18:07:53 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id COUNTER PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGEREGER,
+    City INTEGEREGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 18:07:53 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id COUNTER PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGEREGER,
+    City INTEGEREGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 18:07:53 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 18:07:53 - TableExistsInDatabase: False
+15-Feb-25 18:07:55 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New (
+    Id COUNTER PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGEREGER,
+    City INTEGEREGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 18:07:55 - Error: Syntax error in field definition.
+15-Feb-25 18:10:26 - Process started.
+15-Feb-25 18:10:26 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New ( Id AUTOINCREMENT PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGER, City INTEGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:10:26 - Table name retrieved from the text box. Value: PartiesT_New
+15-Feb-25 18:10:26 - Converted SQL: CREATE TABLE PartiesT_New ( Id COUNTER PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGEREGER, City INTEGEREGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:10:26 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New ( Id COUNTER PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGEREGER, City INTEGEREGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:10:26 - Converted SQL code displayed in FSQLCode text box.
+15-Feb-25 18:10:26 - TableExistsInDatabase: False
+15-Feb-25 18:10:27 - Creating table 'PartiesT_New' with SQL: CREATE TABLE PartiesT_New ( Id COUNTER PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGEREGER, City INTEGEREGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:10:27 - Error: Syntax error in field definition.
+15-Feb-25 18:11:43 - Process started.
+15-Feb-25 18:11:43 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New ( Id AUTOINCREMENT PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGER, City INTEGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:11:43 - Converted SQL: CREATE TABLE PartiesT_New ( Id COUNTER PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGEREGER, City INTEGEREGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:11:43 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New ( Id COUNTER PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGEREGER, City INTEGEREGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:11:43 - Extracted table name: PartiesT_New
+15-Feb-25 18:11:43 - Table name extracted: PartiesT_New
+15-Feb-25 18:11:43 - TableExistsInDatabase: False
+15-Feb-25 18:11:43 - Table 'PartiesT_New' does not exist.
+15-Feb-25 18:11:44 - Creating table 'PartiesT_New' with SQL: PartiesT_New ( Id COUNTER PRIMARY KEY, Name TEXT(200) NOT NULL, ContactNo TEXT(50) NOT NULL, Email TEXT(200) NOT NULL, Country INTEGEREGER, City INTEGEREGER, IsActive YESNO, IsDeleted YESNO, CreatedBy TEXT(200) , CreateDate DATETIME, UpdatedBy TEXT(200) , UpdateDate DATETIME, DeletedBy TEXT(200) , DeleteDate DATETIME )
+15-Feb-25 18:11:44 - Error: Invalid SQL statement; expected 'DELETE', 'INSERT', 'PROCEDURE', 'SELECT', or 'UPDATE'.
+15-Feb-25 18:12:58 - Process started.
+15-Feb-25 18:12:58 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 18:12:58 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 18:12:58 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 18:12:58 - Extracted table name: PartiesT_New
+15-Feb-25 18:12:58 - Table name extracted: PartiesT_New
+15-Feb-25 18:12:58 - TableExistsInDatabase: False
+15-Feb-25 18:12:58 - Table 'PartiesT_New' does not exist.
+15-Feb-25 18:12:59 - Creating table 'PartiesT_New' with SQL: PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 18:12:59 - Error: Invalid SQL statement; expected 'DELETE', 'INSERT', 'PROCEDURE', 'SELECT', or 'UPDATE'.
+15-Feb-25 18:13:06 - Process started.
+15-Feb-25 18:13:06 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 18:13:06 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 18:13:06 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 18:13:06 - Extracted table name: PartiesT_New
+15-Feb-25 18:13:06 - Table name extracted: PartiesT_New
+15-Feb-25 18:13:06 - TableExistsInDatabase: False
+15-Feb-25 18:13:06 - Table 'PartiesT_New' does not exist.
+15-Feb-25 18:13:07 - Creating table 'PartiesT_New' with SQL: PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 18:13:07 - Error: Invalid SQL statement; expected 'DELETE', 'INSERT', 'PROCEDURE', 'SELECT', or 'UPDATE'.
+15-Feb-25 21:18:56 - Process started.
+15-Feb-25 21:18:56 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 21:18:56 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 21:18:56 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 21:18:56 - Extracted table name: PartiesT_New
+15-Feb-25 21:18:56 - Table name extracted: PartiesT_New
+15-Feb-25 21:18:56 - TableExistsInDatabase: False
+15-Feb-25 21:18:56 - Table 'PartiesT_New' does not exist.
+15-Feb-25 21:18:57 - Creating table 'PartiesT_New' with SQL: PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 21:18:57 - Error: Invalid SQL statement; expected 'DELETE', 'INSERT', 'PROCEDURE', 'SELECT', or 'UPDATE'.
+15-Feb-25 22:19:22 - Process started.
+15-Feb-25 22:19:22 - SQL code retrieved from the text box. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+);
+15-Feb-25 22:19:22 - Converted SQL: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 22:19:22 - SQL code converted to Access-compatible SQL. Value: CREATE TABLE PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 22:19:22 - Extracted table name: PartiesT_New
+15-Feb-25 22:19:22 - Table name extracted: PartiesT_New
+15-Feb-25 22:19:22 - TableExistsInDatabase: False
+15-Feb-25 22:19:22 - Table 'PartiesT_New' does not exist.
+15-Feb-25 22:19:23 - Creating table 'PartiesT_New' with SQL: PartiesT_New (
+    Id AUTOINCREMENT PRIMARY KEY,
+    Name TEXT(200) NOT NULL,
+    ContactNo TEXT(50) NOT NULL,
+    Email TEXT(200) NOT NULL,
+    Country INTEGER,
+    City INTEGER,
+    IsActive YESNO,
+    IsDeleted YESNO,
+    CreatedBy TEXT(200),
+    CreateDate DATETIME,
+    UpdatedBy TEXT(200),
+    UpdateDate DATETIME,
+    DeletedBy TEXT(200),
+    DeleteDate DATETIME
+)
+15-Feb-25 22:19:23 - Error: Invalid SQL statement; expected 'DELETE', 'INSERT', 'PROCEDURE', 'SELECT', or 'UPDATE'.
