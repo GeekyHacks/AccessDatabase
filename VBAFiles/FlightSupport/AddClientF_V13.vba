@@ -19,7 +19,7 @@ Private Sub Country_AfterUpdate()
     Dim nationalityValue As String
     Dim sql As String
 
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
 
         ' Get the selected country code
         selectedCountry = Me.Country.Column(0)
@@ -49,7 +49,7 @@ Private Sub Country_AfterUpdate()
 
      Exit Sub
 
- ErrorHandler:
+ErrorHandler:
         MsgBox "An error occurred: " & Err.Description
         If Not Nationality Is Nothing Then
             Nationality.Close
@@ -68,7 +68,7 @@ Function SanitizeSQL(sql As String, ParamArray params() As Variant) As String
         ' Sanitize the parameter value (e.g., escape single quotes)
         If IsNull(paramValue) Then
             paramValue = "NULL"
-        Elseif IsNumeric(paramValue) Then
+        ElseIf IsNumeric(paramValue) Then
             ' Numeric values don't need escaping
         Else
             ' Escape single quotes For strings
@@ -88,24 +88,66 @@ End Sub
 Private Sub AOCExpiry_Click()
     InputDateField AOCExpiry, "Select a date To use this on your form"
 End Sub
-Public Sub ResetBtn_Click()
-    On Error Goto ErrorHandler
+Private Function ExecuteInTransaction(operation As String, Optional param1 As Long, Optional param2 As Long) As Variant
+    On Error GoTo ErrorHandler
 
-        Me.Undo
-        DoCmd.CancelEvent
-        DoCmd.GoToRecord , , acNewRec
+    ' Log the start of the operation
+    LogError "Starting operation: " & operation, "ExecuteInTransaction"
 
-     Exit Sub
+    ' Execute the operation based on the provided name
+    Select Case operation
+        Case "AddParty"
+            ExecuteInTransaction = AddParty()
+            LogError "AddParty completed. PartyID: " & ExecuteInTransaction, "ExecuteInTransaction"
 
- ErrorHandler:
-        MsgBox "An error occurred: " & Err.Description, vbExclamation
-End Sub
+        Case "AddLocation"
+            ExecuteInTransaction = AddLocation(param1)
+            LogError "AddLocation completed. LocationID: " & ExecuteInTransaction, "ExecuteInTransaction"
 
+        Case "AddPartyContact"
+            AddPartyContact param1, param2
+            ExecuteInTransaction = True
+            LogError "AddPartyContact completed.", "ExecuteInTransaction"
+
+        Case "AddClient"
+            AddClient param1
+            ExecuteInTransaction = True
+            LogError "AddClient completed.", "ExecuteInTransaction"
+
+        Case "AddVendor"
+            AddVendor param1
+            ExecuteInTransaction = True
+            LogError "AddVendor completed.", "ExecuteInTransaction"
+
+        Case "AddPartyLocation"
+            AddPartyLocation param1, param2
+            ExecuteInTransaction = True
+            LogError "AddPartyLocation completed.", "ExecuteInTransaction"
+
+        Case "AddPartyRole"
+            AddPartyRole param1, param2
+            ExecuteInTransaction = True
+            LogError "AddPartyRole completed.", "ExecuteInTransaction"
+
+        Case Else
+            LogError "Invalid operation: " & operation, "ExecuteInTransaction"
+            MsgBox "Invalid operation: " & operation, vbExclamation
+            ExecuteInTransaction = -1
+    End Select
+
+    Exit Function
+
+ErrorHandler:
+    ' Log the error
+    LogError "Error in ExecuteInTransaction: " & Err.Description, "ExecuteInTransaction"
+    MsgBox "Error in ExecuteInTransaction: " & Err.Description, vbCritical
+    ExecuteInTransaction = -1
+End Function
 '=======================================================
 ' Helper Function: GeneratePartyCode
 '=======================================================
 Private Function GeneratePartyCode() As Long
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
 
         Dim rst As DAO.Recordset
         Dim newCorpID As Long
@@ -135,20 +177,16 @@ Private Function GeneratePartyCode() As Long
         GeneratePartyCode = newCorpID
      Exit Function
 
- ErrorHandler:
+ErrorHandler:
+        LogError "Error in GeneratePartyCode: " & Err.Description, "GeneratePartyCode"
         MsgBox "Error in GeneratePartyCode: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
         GeneratePartyCode = -1
 End Function
-
 '=======================================================
 ' Helper Function: AddParty
 '=======================================================
 Private Function AddParty() As Long
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
 
         ' Validate required fields
         If IsNull(Me.PartyName.Value) Or IsNull(Me.FSANumber.Value) Then
@@ -186,7 +224,7 @@ Private Function AddParty() As Long
                 !DateSigned = Me.DateSigned.Value
                 !VAT_NO = Me.VAT_NO.Value
                 ' !DocStorage = Me.DocStorage.Value ' Uncomment If needed
-                !IsActive = Me.IsActive.Value
+
                 .Update
 
                 ' Retrieve the newly added CorpID
@@ -202,12 +240,9 @@ Private Function AddParty() As Long
 
          Exit Function
 
- ErrorHandler:
+ErrorHandler:
+            LogError "Error in AddParty: " & Err.Description, "AddParty"
             MsgBox "Error in AddParty: " & Err.Description, vbCritical
-            If Not rst Is Nothing Then
-                rst.Close
-                Set rst = Nothing
-            End If
             AddParty = -1
 End Function
 '=======================================================
@@ -226,124 +261,166 @@ Private Function GenerateDisplayPartyCode(corpID As Long) As String
     ' Generate the PartyCode in the format [Prefix][XXXX][YY]
     GenerateDisplayPartyCode = prefix & Format(corpID, "0000") & Format(date, "yy")
 End Function
+
 '=======================================================
 'Displays the dynamically generated PartyCode on the form.
 '=======================================================
 Private Sub DisplayPartyCode(corpID As Long)
     Me.PartyCode.Value = GenerateDisplayPartyCode(corpID)
 End Sub
+
 '=======================================================
 ' Main Function: AddClientBtn_Click
 '=======================================================
 Private Sub AddPartyBtn_Click()
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
 
-        ' Add Party
-        Dim partyID As Long
-        partyID = AddParty()
-        If partyID = -1 Then Exit Sub ' Exit If there was an error
+    Dim ws As DAO.Workspace
+    Set ws = DBEngine.Workspaces(0) ' Get the default workspace
 
-            ' Add Location
-            Dim locationID As Long
-            locationID = AddLocation()
-            If locationID = -1 Then Exit Sub
+    Dim PartyID As Long
+    Dim locationID As Long
+    Dim success As Variant
 
-                ' Add Party Contact
-                AddPartyContact partyID, locationID
+    ' Log the start of the process
+    LogError "Starting AddPartyBtn_Click process.", "AddPartyBtn_Click"
 
-                ' Add Client
-                AddClient partyID
+    ' Start the transaction
+    ws.BeginTrans
+    LogError "Transaction started.", "AddPartyBtn_Click"
 
-                ' Add Vendor (If applicable)
-                If Me.VendorChx.Value = True Then
-                    ' Add Vendor
-                    AddVendor partyID
+    ' Add Party
+    PartyID = AddParty()
+    If PartyID = -1 Then GoTo Rollback
+    LogError "AddParty completed. PartyID: " & PartyID, "AddPartyBtn_Click"
 
-                    ' Add Party Location (Vendor)
-                    AddPartyLocation partyID, locationID
-                End If
+    ' Add Location
+    locationID = AddLocation(PartyID)
+    If locationID = -1 Then GoTo Rollback
+    LogError "AddLocation completed. LocationID: " & locationID, "AddPartyBtn_Click"
 
-                MsgBox "Client added successfully!", vbInformation
-             Exit Sub
+    ' Add Party Contact
+    AddPartyContact PartyID, locationID
+    LogError "AddPartyContact completed.", "AddPartyBtn_Click"
 
- ErrorHandler:
-                MsgBox "Error in AddClientBtn_Click: " & Err.Description, vbCritical
+    ' Add Client
+    AddClient PartyID
+    LogError "AddClient completed.", "AddPartyBtn_Click"
+
+    ' Add Roles (from ListBox)
+    Dim roleID As Long
+    Dim i As Variant
+    For Each i In Me.RolesListBox.ItemsSelected
+        roleID = Me.RolesListBox.Column(0, i) ' Assuming the Role ID is in the first column
+        AddPartyRole PartyID, roleID
+        LogError "AddPartyRole completed for RoleID: " & roleID, "AddPartyBtn_Click"
+    Next i
+
+    ' Add Vendor (if applicable)
+    If Me.VendorChx.Value = True Then
+        ' Add Vendor
+        AddVendor PartyID
+        LogError "AddVendor completed.", "AddPartyBtn_Click"
+
+        ' Add Party Location (Vendor)
+        AddPartyLocation PartyID, locationID
+        LogError "AddPartyLocation completed.", "AddPartyBtn_Click"
+    End If
+
+    ' Commit the transaction if everything succeeds
+    ws.CommitTrans
+    LogError "Transaction committed successfully.", "AddPartyBtn_Click"
+    MsgBox "Client added successfully!", vbInformation
+    Exit Sub
+
+Rollback:
+    ' Rollback the transaction on error
+    ws.Rollback
+    LogError "Transaction rolled back due to an error.", "AddPartyBtn_Click"
+    MsgBox "Transaction rolled back due to an error.", vbExclamation
+    Exit Sub
+
+ErrorHandler:
+    ' Log the error and rollback the transaction
+    LogError "Error in AddPartyBtn_Click: " & Err.Description, "AddPartyBtn_Click"
+    MsgBox "Error in AddPartyBtn_Click: " & Err.Description, vbCritical
+    If Not ws Is Nothing Then
+        ws.Rollback ' Ensure the transaction is rolled back
+        LogError "Transaction rolled back due to an error.", "AddPartyBtn_Click"
+    End If
 End Sub
 '=======================================================
 ' Helper Function: AddPartyRole
 '=======================================================
-Private Sub AddPartyRole(partyID As Long, roleID As Long)
-    On Error Goto ErrorHandler
+Private Function AddPartyRole(PartyID As Long, roleID As Long) As Boolean
+    On Error GoTo ErrorHandler
 
-        Dim rst As DAO.Recordset
-        Set rst = CurrentDb.OpenRecordset("PartyRolesJT_V13", dbOpenDynaset)
+    Dim rst As DAO.Recordset
+    Set rst = CurrentDb.OpenRecordset("PartyRolesJT_V13", dbOpenDynaset)
 
-        With rst
-            .AddNew
-            !partyID = partyID ' Use the passed CorpID
-            !roleID = roleID
-            !IsActive = True
-            !CreatedDate = date
-            .Update
-        End With
+    With rst
+        .AddNew
+        !corpID = PartyID ' Use the passed PartyID
+        !roleID = roleID
+        !IsActive = True
+        .Update
+    End With
 
-        rst.Close
-        Set rst = Nothing
-     Exit Sub
+    rst.Close
+    Set rst = Nothing
+    AddPartyRole = True
+    Exit Function
 
- ErrorHandler:
-        MsgBox "Error in AddPartyRole: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
-End Sub
+ErrorHandler:
+    LogError "Error in AddPartyRole: " & Err.Description, "AddPartyRole"
+    MsgBox "Error in AddPartyRole: " & Err.Description, vbCritical
+    AddPartyRole = False
+End Function
+
 '=======================================================
 ' Helper Function: AddLocation
 '=======================================================
-Private Function AddLocation() As Long
-    On Error Goto ErrorHandler
+Private Function AddLocation(PartyID As Long) As Long
+    On Error GoTo ErrorHandler
 
-        Dim rst As DAO.Recordset
-        Set rst = CurrentDb.OpenRecordset("LocationsT_V13", dbOpenDynaset)
+    Dim rst As DAO.Recordset
+    Set rst = CurrentDb.OpenRecordset("LocationsT_V13", dbOpenDynaset)
 
-        With rst
-            .AddNew
-            !corpID = partyID ' Use the passed CorpID
-            !Country = Me.Country.Value
-            !City = Me.City.Value
-            !Address = Me.Address.Value
-            .Update
+    With rst
+        .AddNew
+        !corpID = PartyID ' Use the passed PartyID
+        !Country = Me.Country.Value
+        !City = Me.City.Value
+        !Address = Me.Address.Value
+        .Update
 
-            ' Retrieve the newly added Location ID
-            .Bookmark = .LastModified
-            AddLocation = !ID
-        End With
+        ' Retrieve the newly added Location ID
+        .Bookmark = .LastModified
+        AddLocation = !ID
+    End With
 
-        rst.Close
-        Set rst = Nothing
-     Exit Function
+    rst.Close
+    Set rst = Nothing
+    Exit Function
 
- ErrorHandler:
-        MsgBox "Error in AddLocation: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
-        AddLocation = -1
+ErrorHandler:
+    LogError "Error in AddLocation: " & Err.Description, "AddLocation"
+    MsgBox "Error in AddLocation: " & Err.Description, vbCritical
+    AddLocation = -1
 End Function
+
 '=======================================================
 ' Helper Function: AddPartyContact
 '=======================================================
-Private Sub AddPartyContact(partyID As Long, locationID As Long)
-    On Error Goto ErrorHandler
+Private Sub AddPartyContact(PartyID As Long, locationID As Long)
+    On Error GoTo ErrorHandler
 
         Dim rst As DAO.Recordset
         Set rst = CurrentDb.OpenRecordset("PartyContactT_V13", dbOpenDynaset)
 
         With rst
             .AddNew
-            !corpID = partyID
+            !corpID = PartyID
             !locationID = locationID
             !PrimaryEmail = Me.PrimaryEmail.Value
             !SecondaryEmail = Me.SecondaryEmail.Value
@@ -355,30 +432,27 @@ Private Sub AddPartyContact(partyID As Long, locationID As Long)
         Set rst = Nothing
      Exit Sub
 
- ErrorHandler:
+ErrorHandler:
+        LogError "Error in AddPartyContact: " & Err.Description, "AddPartyContact"
         MsgBox "Error in AddPartyContact: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
 End Sub
+
 '=======================================================
 ' Helper Function: AddClient
 '=======================================================
-Private Sub AddClient(partyID As Long)
-    On Error Goto ErrorHandler
+Private Sub AddClient(PartyID As Long)
+    On Error GoTo ErrorHandler
 
         Dim rst As DAO.Recordset
         Set rst = CurrentDb.OpenRecordset("ClientsT_V13", dbOpenDynaset)
 
         With rst
             .AddNew
-            !corpID = partyID
+            !corpID = PartyID
             !CreditLimit = Me.CreditLimit.Value
             !Deposit = Me.Deposit.Value
             !Currency = Me.Currency.Value
             !ClientRating = Me.ClientRating.Value
-            !IsActive = Me.IsActive.Value
             !ClientDescription = Me.ClientDescription.Value
             .Update
         End With
@@ -387,30 +461,27 @@ Private Sub AddClient(partyID As Long)
         Set rst = Nothing
      Exit Sub
 
- ErrorHandler:
+ErrorHandler:
+        LogError "Error in AddClient: " & Err.Description, "AddClient"
         MsgBox "Error in AddClient: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
 End Sub
+
 '=======================================================
 ' Helper Function: AddVendor
 '=======================================================
-Private Sub AddVendor(partyID As Long)
-    On Error Goto ErrorHandler
+Private Sub AddVendor(PartyID As Long)
+    On Error GoTo ErrorHandler
 
         Dim rst As DAO.Recordset
         Set rst = CurrentDb.OpenRecordset("VendorsT_V13", dbOpenDynaset)
 
         With rst
             .AddNew
-            !corpID = partyID
+            !corpID = PartyID
             !CreditLimit = Me.CreditLimit.Value
             !Deposit = Me.Deposit.Value
             !Currency = Me.Currency.Value
             !VendorRating = Me.VendorRating.Value
-            !IsActive = Me.IsActive.Value
             !VendorDescription = Me.ClientDescription.Value
             .Update
         End With
@@ -419,25 +490,23 @@ Private Sub AddVendor(partyID As Long)
         Set rst = Nothing
      Exit Sub
 
- ErrorHandler:
+ErrorHandler:
+        LogError "Error in AddVendor: " & Err.Description, "AddVendor"
         MsgBox "Error in AddVendor: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
 End Sub
+
 '=======================================================
 ' Helper Function: AddPartyLocation
 '=======================================================
-Private Sub AddPartyLocation(partyID As Long, locationID As Long)
-    On Error Goto ErrorHandler
+Private Sub AddPartyLocation(PartyID As Long, locationID As Long)
+    On Error GoTo ErrorHandler
 
         Dim rst As DAO.Recordset
         Set rst = CurrentDb.OpenRecordset("PartyLocations_JT_V13", dbOpenDynaset)
 
         With rst
             .AddNew
-            !corpID = partyID
+            !corpID = PartyID
             !locationID = locationID
             !IsPrimary = True
             .Update
@@ -447,38 +516,98 @@ Private Sub AddPartyLocation(partyID As Long, locationID As Long)
         Set rst = Nothing
      Exit Sub
 
- ErrorHandler:
+ErrorHandler:
+        LogError "Error in AddPartyLocation: " & Err.Description, "AddPartyLocation"
         MsgBox "Error in AddPartyLocation: " & Err.Description, vbCritical
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
 End Sub
-Private Sub ResetFormFields()
-    ' Clear all form fields
-    Me.Code.Value = Null
-    Me.OperatorName.Value = Null
-    Me.ICAO.Value = Null
-    Me.IATA.Value = Null
-    Me.AOCExpiry.Value = Null
-    Me.Address.Value = Null
-    Me.ContactInfo.Value = Null
+
+'=======================================================
+' Helper Function: logging errors
+'=======================================================
+Private Sub LogError(ErrorMessage As String, ErrorSource As String)
+    On Error GoTo ErrorHandler ' Temporarily remove "On Error Resume Next"
+
+    Dim filePath As String
+    Dim fileNumber As Integer
+    Dim logMessage As String
+
+    ' Define the file path
+    filePath = "E:\ent\DebugLog_AddClientF_V13.txt"
+    'MsgBox "Log file path: " & filePath, vbInformation ' Debug message
+
+    ' Open the file For appending (creates the file If it doesn't exist)
+    fileNumber = FreeFile
+   ' MsgBox "Opening file for appending...", vbInformation ' Debug message
+    Open filePath For Append As #fileNumber
+   ' MsgBox "File opened successfully.", vbInformation ' Debug message
+
+    ' Prepare the log message
+    logMessage = "Error Date: " & Now() & vbCrLf & _
+                 "Error Source: " & ErrorSource & vbCrLf & _
+                 "Error Message: " & ErrorMessage & vbCrLf & _
+                 "----------------------------------------" & vbCrLf
+
+    ' Write the log message To the file
+    'MsgBox "Writing log message: " & logMessage, vbInformation ' Debug message
+    Print #fileNumber, logMessage
+   ' MsgBox "Log message written successfully.", vbInformation ' Debug message
+
+    ' Close the file
+    Close #fileNumber
+   ' MsgBox "File closed successfully.", vbInformation ' Debug message
+
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error in LogError: " & Err.Description, vbCritical ' Debug message
+End Sub
+Private Sub ResetForm()
+    On Error Resume Next ' Skip errors For controls without a Value Property
+
+    ' Clear text boxes, combo boxes, And other input fields
+    Me.PartyCode.Value = Null
+    Me.PartyName.Value = Null
+    Me.FSANumber.Value = Null
+    Me.AgreementStatus.Value = "Pending" ' "Pending" is the default value
+    Me.AgreementExpiry.Value = Null
+    Me.DateSigned.Value = Null
+    Me.VAT_NO.Value = Null
     Me.Country.Value = Null
     Me.City.Value = Null
+    Me.Address.Value = Null
     Me.PrimaryEmail.Value = Null
-    Me.FSANumber.Value = Null
-    Me.AgreementStatus.Value = "PENDING"
-    Me.DateSigned.Value = Null
     Me.SecondaryEmail.Value = Null
-    Me.CargoCmb.Value = Null
-    Me.PVTCmb.Value = Null
-    Me.AmbulanceCmb.Value = Null
-    Me.COMCmb.Value = Null
-    Me.Nationality.Value = Null
-    Me.AllOpsCmb.Value = Null
+    Me.Phone.Value = Null
+    Me.CreditLimit.Value = 15000 ' 15000 is the default value
+    Me.Deposit.Value = 0 ' 0 is the default value
+    Me.Currency.Value = "USD"  ' "USD" is the default value
+    Me.ClientRating.Value = 3 ' 3 is the default value
+    Me.ClientDescription.Value = Null
+    Me.VendorRating.Value = 3 ' 3 is the default value
 
-    ' Set focus To the first field For data entry
-    Me.OperatorName.SetFocus
+
+    ' Reset checkboxes And toggle buttons To default state
+    Me.VendorChx.Value = False
+    Me.IsActive.Value = True ' Default To "Active"
+
+    ' Set focus To the first input field
+    Me.PartyName.SetFocus
+
+    On Error GoTo 0 ' Reset error handling
+End Sub
+Private Sub ResetBtn_Click()
+    ' Ask the user For confirmation before resetting the form
+    Dim response As VbMsgBoxResult
+    response = MsgBox("Are you sure you want To reset the form? All unsaved data will be lost.", vbYesNo + vbQuestion, "Confirm Reset")
+
+    ' Check the user's response
+    If response = vbYes Then
+        ResetForm ' Reset the form If the user clicks Yes
+        LogError "Form reset by user.", "ResetBtn_Click" ' Optional logging
+    Else
+        ' Do nothing If the user clicks No
+     Exit Sub
+    End If
 End Sub
 Private Sub Command192_Click()
     DoCmd.OpenForm "UpdateOperatorF", WindowMode:=acWindowNormal
@@ -503,3 +632,5 @@ Private Sub VendorChx_Click()
         Me.VendorRating.Visible = False
     End If
 End Sub
+
+
