@@ -1,94 +1,162 @@
-+-------------------+          +-------------------+          +-------------------+
-|     PARTIES       |          |     LOCATIONS     |          |     SERVICES      |
-+-------------------+          +-------------------+          +-------------------+
-| ID (PK)           |<-------->| ID (PK)           |          | ID (PK)           |
-| NAME              |          | LOCATION_NAME     |          | SERVICE_NAME      |
-| CONTACT_NO        |          | ADDRESS           |          | DESCRIPTION       |
-| E_MAIL            |          | COUNTRY           |          | IS_ACTIVE         |
-| COUNTRY           |          | CITY              |          +-------------------+
-| CITY              |                     ^
-| IS_ACTIVE         |                     |
-| IS_DELETED        |                     |
-| CREATED_BY        |                     |
-| CREATE_DATE       |                     |
-| UPDATED_BY        |                     |
-| UPDATE_DATE       |                     |
-| DELETED_BY        |                     |
-| DELETE_DATE       |                     |
-+-------------------+                     |
-        ^                                |
-        |                                |
-        |                                |
-+-------------------+          +-------------------+
-|     ROLES         |          | PARTY_LOCATIONS   |
-+-------------------+          +-------------------+
-| ID (PK)           |<-------->| PARTY_ID (PK, FK) |
-| ROLE_NAME         |          | LOCATION_ID (PK, FK)
-+-------------------+          | IS_PRIMARY        |
-        ^                     +-------------------+
-        |
-        |
+1. Core Tables
+plaintext
+Copy
++-------------------+
+|     PARTIES       |
++-------------------+
+| ID (PK)           |
+| NAME              |
+| IS_ACTIVE         |
+| IS_DELETED        |
+| CREATED_BY        |
+| CREATE_DATE       |
+| UPDATED_BY        |
+| UPDATE_DATE       |
+| DELETED_BY        |
+| DELETE_DATE       |
++-------------------+
++-------------------+
+|     ROLES         |
++-------------------+
+| ID (PK)           |
+| ROLE_NAME         |
+| DESCRIPTION       |
+| ROLE_TYPE         |
++-------------------+
+
 +-------------------+
 | PARTY_ROLES       |
 +-------------------+
 | PARTY_ID (PK, FK) |
 | ROLE_ID (PK, FK)  |
-+-------------------+
-
-+-------------------+          +-------------------+
-|     CLIENTS       |          | VENDOR_SERVICES   |
-+-------------------+          +-------------------+
-| PARTY_ID (PK, FK) |<-------->| VENDOR_ID (PK, FK)|
-| CREDIT_LIMIT      |          | SERVICE_ID (PK, FK)
-| CURRENCY_ID (FK)  |          | CURRENCY_ID (FK)  |
-| TRN_NO            |          | PAYMENT_TYPE_ID (FK)
-| VAT_NO            |          | COST              |
-+-------------------+          | NOTES             |
-                              +-------------------+
-
-+-------------------+          +-------------------+
-|     VENDORS       |          |     CURRENCIES    |
-+-------------------+          +-------------------+
-| PARTY_ID (PK, FK) |          | ID (PK)           |
-| VENDOR_RATING     |          | CURRENCY_CODE     |
-| PAYMENT_TERMS     |          | CURRENCY_NAME     |
-+-------------------+          | SYMBOL            |
-                              +-------------------+
-
-+-------------------+          +-------------------+
-|     HANDLERS      |          |   PAYMENT_TYPES   |
-+-------------------+          +-------------------+
-| PARTY_ID (PK, FK) |          | ID (PK)           |
-| HANDLER_TYPE      |          | PAYMENT_TYPE_NAME |
-| CERTIFICATION_NO  |          +-------------------+
-+-------------------+
-
-+-------------------+          +-------------------+
-|     AGENTS        |          |   AIRCRAFTS       |
-+-------------------+          +-------------------+
-| PARTY_ID (PK, FK) |<-------->| ID (PK)           |
-| AGENCY_NAME       |          | AIRCRAFT_NAME     |
-| COMMISSION_RATE   |          | REGISTRATION_NO   |
-+-------------------+          | CAPACITY          |
-                              +-------------------+
-
-+-------------------+          +-------------------+
-|     OPERATORS     |          | SPECIALIZATIONS   |
-+-------------------+          +-------------------+
-| PARTY_ID (PK, FK) |<-------->| ID (PK)           |
-| OPERATOR_TYPE     |          | SPECIALIZATION_NAME
-| CERTIFICATION_NO  |          +-------------------+
+| IS_ACTIVE         |
+| CREATED_DATE      |
+| UPDATED_DATE      |
+| PRIORITY          |
 +-------------------+
 
 +-------------------+
-| OPERATOR_SERVICES |
+|     LOCATIONS     |
 +-------------------+
-| OPERATOR_ID (PK, FK)
+| ID (PK)           |
+| COUNTRY_NAME      |
+| STATE             |
+| CITY              |
+| ADDRESS           |
++-------------------+
++-------------------+
+| PARTY_CONTACTS    |
++-------------------+
+| ID (PK)           |
+| PARTY_ID (FK)     |
+| LOCATION_ID (FK)  |
+| AIRPORT_ID (FK)   |
+| PRIMARY_EMAIL     |
+| SECONDARY_EMAIL   |
+| PRIMARY_PHONE     |
+| SECONDARY_PHONE   |
++-------------------+
++-------------------+
+|     AIRPORTS      |
++-------------------+
+| ID (PK)           |
+| LOCATION_ID (FK)  |
+| AIRPORT_CODE      |
+| AIRPORT_NAME      |
++-------------------+
+
++-------------------+
+| PARTY_LOCATIONS   |
++-------------------+
+| PARTY_ID (PK, FK) |
+| LOCATION_ID (PK, FK)
+| IS_PRIMARY        |
++-------------------+
+
++-------------------+
+| VENDOR_COUNTRIES  |
++-------------------+
+| VENDOR_ID (FK)    |
+| COUNTRY_ID (FK)   |
++-------------------+
+This avoids cluttering the LOCATIONS table with non-physical entries.
+
+2. Service Tables
+
++-------------------+
+|     SERVICES      |
++-------------------+
+| ID (PK)           |
+| SERVICE_NAME      |
+| DESCRIPTION       |
+| IS_ACTIVE         |
++-------------------+
+
++-------------------+
+|   PARTY_SERVICES  |
++-------------------+
+| PARTY_ID (PK, FK) |
 | SERVICE_ID (PK, FK)
 | CURRENCY_ID (FK)  |
 | PAYMENT_TYPE_ID (FK)
 | COST              |
 | NOTES             |
++-------------------+
+
+3. Party-Specific Tables
+plaintext
+Copy
++-------------------+
+|     CLIENTS       |
++-------------------+
+| PARTY_ID (PK, FK) |
+| CREDIT_LIMIT      |
+| CURRENCY_ID (FK)  |
+| TRN_NO            |
+| VAT_NO            |
++-------------------+
+
++-------------------+
+|     VENDORS       |
++-------------------+
+| PARTY_ID (PK, FK) |
+| VENDOR_RATING     |
+| PAYMENT_TERMS     |
++-------------------+
+
++-------------------+
+|     HANDLERS      |
++-------------------+
+| PARTY_ID (PK, FK) |
+| HANDLER_TYPE      |
+| CERTIFICATION_NO  |
++-------------------+
+
++-------------------+
+|     AGENTS        |
++-------------------+
+| PARTY_ID (PK, FK) |
+| AGENCY_NAME       |
+| COMMISSION_RATE   |
++-------------------+
+
++-------------------+
+|     OPERATORS     |
++-------------------+
+| PARTY_ID (PK, FK) |
+| OPERATOR_TYPE     |
+| CERTIFICATION_NO  |
++-------------------+
+4. Aircraft Tables
+plaintext
+Copy
++-------------------+
+|     AIRCRAFTS     |
++-------------------+
+| ID (PK)           |
+| AIRCRAFT_NAME     |
+| REGISTRATION_NO   |
+| CAPACITY          |
 +-------------------+
 
 +-------------------+
@@ -97,10 +165,415 @@
 | OPERATOR_ID (PK, FK)
 | AIRCRAFT_ID (PK, FK)
 +-------------------+
+5. Currency and Payment Tables
+plaintext
+Copy
++-------------------+
+|     CURRENCIES    |
++-------------------+
+| ID (PK)           |
+| CURRENCY_CODE     |
+| CURRENCY_NAME     |
+| SYMBOL            |
++-------------------+
 
 +-------------------+
-| OPERATOR_SPECIALIZATIONS|
+|   PAYMENT_TYPES   |
 +-------------------+
-| OPERATOR_ID (PK, FK)
-| SPECIALIZATION_ID (PK, FK)
+| ID (PK)           |
+| PAYMENT_TYPE_NAME |
 +-------------------+
+Key Changes
+Unified PARTIES Table:
+
+All entities (handlers, operators, vendors, agents, clients) are stored in the PARTIES table.
+
+The PARTY_ROLES table links parties to their roles (e.g., handler, operator, vendor, agent, client).
+
+Flexible PARTY_LOCATIONS:
+
+A party can have multiple locations, and a location can have multiple airports.
+
+The PARTY_LOCATIONS table links parties to locations and airports.
+
+Streamlined PARTY_CONTACTS:
+
+Contact information is stored in a single table, linked to parties, locations, and airports.
+
+Service and Specialization Flexibility:
+
+Services and specializations are linked to parties (vendors, operators) through junction tables.
+
+Aircraft and Operator Relationship:
+
+Operators can be linked to multiple aircraft through the OPERATOR_AIRCRAFTS table.
+
+Benefits of the Modified Structure
+Scalability: Easily add new types of parties (e.g., handlers, operators) without modifying the core structure.
+
+Flexibility: A single location can have multiple airports, and a party can have multiple locations.
+
+Simplified Maintenance: Centralized contact information and roles reduce redundancy.
+
+
+Database Schema Documentation
+1. Core Tables
+1.1 PARTIES
+Purpose: Stores all entities (e.g., clients, vendors, handlers, agents, operators) as parties.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the party.
+
+NAME: Name of the party.
+
+IS_ACTIVE: Indicates if the party is active.
+
+IS_DELETED: Indicates if the party is deleted.
+
+CREATED_BY: User who created the party.
+
+CREATE_DATE: Date when the party was created.
+
+UPDATED_BY: User who last updated the party.
+
+UPDATE_DATE: Date when the party was last updated.
+
+DELETED_BY: User who deleted the party.
+
+DELETE_DATE: Date when the party was deleted.
+
+Relationships:
+
+Linked to PARTY_ROLES to define roles for the party.
+
+Linked to PARTY_LOCATIONS to define locations associated with the party.
+
+Linked to PARTY_CONTACTS to store contact information.
+
+1.2 ROLES
+Purpose: Defines roles that parties can have (e.g., client, vendor, handler, agent, operator).
+
+Fields:
+
+ID (Primary Key): Unique identifier for the role.
+
+ROLE_NAME: Name of the role.
+
+DESCRIPTION: Description of the role.
+
+ROLE_TYPE: Type of role (e.g., internal, external).
+
+Relationships:
+
+Linked to PARTY_ROLES to assign roles to parties.
+
+1.3 PARTY_ROLES
+Purpose: Links parties to their roles.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+ROLE_ID (Primary Key, Foreign Key): References ROLES.ID.
+
+IS_ACTIVE: Indicates if the role is active for the party.
+
+CREATED_DATE: Date when the role was assigned.
+
+UPDATED_DATE: Date when the role was last updated.
+
+PRIORITY: Priority of the role (optional).
+
+Relationships:
+
+Many-to-many relationship between PARTIES and ROLES.
+
+1.4 LOCATIONS
+Purpose: Stores physical locations (e.g., countries, states, cities, addresses).
+
+Fields:
+
+ID (Primary Key): Unique identifier for the location.
+
+COUNTRY_NAME: Name of the country.
+
+STATE: Name of the state.
+
+CITY: Name of the city.
+
+ADDRESS: Full address.
+
+Relationships:
+
+Linked to PARTY_LOCATIONS to associate locations with parties.
+
+Linked to AIRPORTS to associate airports with locations.
+
+1.5 PARTY_CONTACTS
+Purpose: Stores contact information for parties.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the contact.
+
+PARTY_ID (Foreign Key): References PARTIES.ID.
+
+LOCATION_ID (Foreign Key): References LOCATIONS.ID.
+
+AIRPORT_ID (Foreign Key): References AIRPORTS.ID.
+
+PRIMARY_EMAIL: Primary email address.
+
+SECONDARY_EMAIL: Secondary email address.
+
+PRIMARY_PHONE: Primary phone number.
+
+SECONDARY_PHONE: Secondary phone number.
+
+Relationships:
+
+Linked to PARTIES, LOCATIONS, and AIRPORTS.
+
+1.6 AIRPORTS
+Purpose: Stores airport information.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the airport.
+
+LOCATION_ID (Foreign Key): References LOCATIONS.ID.
+
+AIRPORT_CODE: Code of the airport (e.g., IATA code).
+
+AIRPORT_NAME: Name of the airport.
+
+Relationships:
+
+Linked to LOCATIONS and PARTY_CONTACTS.
+
+1.7 PARTY_LOCATIONS
+Purpose: Links parties to their locations.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+LOCATION_ID (Primary Key, Foreign Key): References LOCATIONS.ID.
+
+IS_PRIMARY: Indicates if the location is the primary location for the party.
+
+Relationships:
+
+Many-to-many relationship between PARTIES and LOCATIONS.
+
+1.8 VENDOR_COUNTRIES
+Purpose: Tracks the countries where vendors operate.
+
+Fields:
+
+VENDOR_ID (Foreign Key): References PARTIES.ID (for vendors).
+
+COUNTRY_ID (Foreign Key): References LOCATIONS.ID (for countries).
+
+Relationships:
+
+Many-to-many relationship between vendors and countries.
+
+2. Service Tables
+2.1 SERVICES
+Purpose: Defines services offered by parties.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the service.
+
+SERVICE_NAME: Name of the service.
+
+DESCRIPTION: Description of the service.
+
+IS_ACTIVE: Indicates if the service is active.
+
+Relationships:
+
+Linked to PARTY_SERVICES to associate services with parties.
+
+2.2 PARTY_SERVICES
+Purpose: Links parties to the services they offer.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+SERVICE_ID (Primary Key, Foreign Key): References SERVICES.ID.
+
+CURRENCY_ID (Foreign Key): References CURRENCIES.ID.
+
+PAYMENT_TYPE_ID (Foreign Key): References PAYMENT_TYPES.ID.
+
+COST: Cost of the service.
+
+NOTES: Additional notes about the service.
+
+Relationships:
+
+Many-to-many relationship between PARTIES and SERVICES.
+
+3. Party-Specific Tables
+3.1 CLIENTS
+Purpose: Stores client-specific information.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+CREDIT_LIMIT: Credit limit for the client.
+
+CURRENCY_ID (Foreign Key): References CURRENCIES.ID.
+
+TRN_NO: Tax registration number.
+
+VAT_NO: VAT number.
+
+Relationships:
+
+Linked to PARTIES.
+
+3.2 VENDORS
+Purpose: Stores vendor-specific information.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+VENDOR_RATING: Rating of the vendor.
+
+PAYMENT_TERMS: Payment terms for the vendor.
+
+Relationships:
+
+Linked to PARTIES.
+
+3.3 HANDLERS
+Purpose: Stores handler-specific information.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+HANDLER_TYPE: Type of handler.
+
+CERTIFICATION_NO: Certification number of the handler.
+
+Relationships:
+
+Linked to PARTIES.
+
+3.4 AGENTS
+Purpose: Stores agent-specific information.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+AGENCY_NAME: Name of the agency.
+
+COMMISSION_RATE: Commission rate for the agent.
+
+Relationships:
+
+Linked to PARTIES.
+
+3.5 OPERATORS
+Purpose: Stores operator-specific information.
+
+Fields:
+
+PARTY_ID (Primary Key, Foreign Key): References PARTIES.ID.
+
+OPERATOR_TYPE: Type of operator.
+
+CERTIFICATION_NO: Certification number of the operator.
+
+Relationships:
+
+Linked to PARTIES and OPERATOR_AIRCRAFTS.
+
+4. Aircraft Tables
+4.1 AIRCRAFTS
+Purpose: Stores aircraft information.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the aircraft.
+
+AIRCRAFT_NAME: Name of the aircraft.
+
+REGISTRATION_NO: Registration number of the aircraft.
+
+CAPACITY: Capacity of the aircraft.
+
+Relationships:
+
+Linked to OPERATOR_AIRCRAFTS.
+
+4.2 OPERATOR_AIRCRAFTS
+Purpose: Links operators to their aircraft.
+
+Fields:
+
+OPERATOR_ID (Primary Key, Foreign Key): References PARTIES.ID (for operators).
+
+AIRCRAFT_ID (Primary Key, Foreign Key): References AIRCRAFTS.ID.
+
+Relationships:
+
+Many-to-many relationship between operators and aircraft.
+
+5. Currency and Payment Tables
+5.1 CURRENCIES
+Purpose: Stores currency information.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the currency.
+
+CURRENCY_CODE: Code of the currency (e.g., USD, EUR).
+
+CURRENCY_NAME: Name of the currency.
+
+SYMBOL: Symbol of the currency (e.g., $, €).
+
+Relationships:
+
+Linked to PARTY_SERVICES and CLIENTS.
+
+5.2 PAYMENT_TYPES
+Purpose: Stores payment type information.
+
+Fields:
+
+ID (Primary Key): Unique identifier for the payment type.
+
+PAYMENT_TYPE_NAME: Name of the payment type (e.g., credit card, cash).
+
+Relationships:
+
+Linked to PARTY_SERVICES.
+
+Key Relationships
+Party-Role Relationship:
+
+A party can have multiple roles, and a role can be assigned to multiple parties (PARTY_ROLES).
+
+Party-Location Relationship:
+
+A party can have multiple locations, and a location can be associated with multiple parties (PARTY_LOCATIONS).
+
+Party-Service Relationship:
+
+A party can offer multiple services, and a service can be offered by multiple parties (PARTY_SERVICES).
+
+Operator-Aircraft Relationship:
+
+An operator can manage multiple aircraft, and an aircraft can be managed by multiple operators (OPERATOR_AIRCRAFTS).
