@@ -37,10 +37,90 @@ Private Sub LogError( _
  LogError_Handler:
         MsgBox "Logging System Failure: " & Err.Description, vbCritical
 End Sub
-Private Function ValidateRequiredFields() As Boolean
+Private Function ValidateRequiredFields() As String
     On Error Goto ErrorHandler
+        Const PROC_NAME As String = "ValidateRequiredFields"
 
         ' List of required fields And their display names
+        Dim requiredFields As Collection
+        Set requiredFields = GetRequiredFieldsCollection()
+
+        ' Log the number of required fields
+        LogError "Number of required fields: " & requiredFields.Count, "INFO", 0, "Validation", PROC_NAME
+
+        ' Check If the collection is empty
+        If requiredFields.Count = 0 Then
+            LogError "Required fields collection is empty", "CRITICAL", 0, "Validation", PROC_NAME
+            ValidateRequiredFields = "Unknown field (validation error)"
+         Exit Function
+        End If
+
+        ' Loop through the required fields And check If they are null
+        Dim field As Variant
+        For Each field In requiredFields
+            ' Log the field being validated
+            LogError "Validating field: " & field(1), "INFO", 0, "Validation", PROC_NAME
+
+            If IsFieldMissing(field) Then
+                ' Display the error message And Set focus To the missing field
+                HandleMissingField field
+                ValidateRequiredFields = field(1)
+             Exit Function
+            End If
+        Next field
+
+        ' Validate email format For PrimaryEmail
+        If Not IsNull(Me.PrimaryEmail.value) And Me.PrimaryEmail.value <> "" Then
+            If Not IsValidEmail(Me.PrimaryEmail.value) Then
+                ValidateRequiredFields = "Primary Email (invalid format)"
+                MsgBox "The 'Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
+                Me.PrimaryEmail.SetFocus
+             Exit Function
+            End If
+        End If
+
+        ' Validate CountriesListBx only If MultipleCountriesCbx is checked
+        If Me.MultipleCountriesCbx.value = True Then
+            If Me.CountriesListBx.ItemsSelected.Count = 0 Then
+                ValidateRequiredFields = "Countries List"
+                MsgBox "You must Select at least one country in 'Countries List'.", vbExclamation, "Missing Required Selection"
+                Me.CountriesListBx.SetFocus
+             Exit Function
+            End If
+        End If
+
+        ' If all fields are valid, return an empty string
+        ValidateRequiredFields = ""
+     Exit Function
+
+ ErrorHandler:
+        LogError "Error in ValidateRequiredFields: " & Err.Description & " | Line: " & Erl, "CRITICAL", Err.Number, "Validation", PROC_NAME
+        ValidateRequiredFields = "Unknown field (validation error)"
+End Function
+
+Private Function IsValidEmail(email As String) As Boolean
+    On Error Goto ErrorHandler
+        Const PROC_NAME As String = "IsValidEmail"
+
+        ' Simple regex pattern For email validation
+        Dim regex As Object
+        Set regex = CreateObject("VBScript.RegExp")
+        regex.IgnoreCase = True
+        regex.Global = True
+        regex.Pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
+        ' Check If the email matches the pattern
+        IsValidEmail = regex.Test(email)
+
+        LogError "Email validation completed: " & IsValidEmail, "INFO", 0, "Validation", PROC_NAME, "Email: " & email
+     Exit Function
+
+ ErrorHandler:
+        LogError "Failed To validate email: " & Err.Description, "CRITICAL", Err.Number, "Validation", PROC_NAME
+        IsValidEmail = False
+End Function
+Private Function GetRequiredFieldsCollection() As Collection
+    On Error Goto ErrorHandler
         Dim requiredFields As Collection
         Set requiredFields = New Collection
 
@@ -48,38 +128,101 @@ Private Function ValidateRequiredFields() As Boolean
         requiredFields.aDD Array(Me.PartyName, "Party Name")
         requiredFields.aDD Array(Me.FSANumber, "FSA Number")
         requiredFields.aDD Array(Me.Country, "Country")
-        requiredFields.aDD Array(Me.RolesListBox, "Roles List")
+        requiredFields.aDD Array(Me.RolesListBox, "Select the role")
+        requiredFields.aDD Array(Me.ServiceCategoryList, "Service Category")
         requiredFields.aDD Array(Me.VendorRating, "Vendor Rating")
         requiredFields.aDD Array(Me.VAT_NO, "VAT NO")
         requiredFields.aDD Array(Me.AgreementStatus, "Agreement Status")
         requiredFields.aDD Array(Me.Address, "Address")
         requiredFields.aDD Array(Me.Deposit, "Deposit")
-        requiredFields.aDD Array(Me.CreditLimit, "CreditLimit")
+        requiredFields.aDD Array(Me.CreditLimit, "Credit Limit")
         requiredFields.aDD Array(Me.PrimaryEmail, "Primary Email")
         requiredFields.aDD Array(Me.Phone, "Phone")
-        ' Loop through the required fields And check If they are null
-        Dim field As Variant
-        For Each field In requiredFields
-            If IsNull(field(0).value) Then
-                ' Display a message To the user
-                MsgBox "The field '" & field(1) & "' is required. Please fill it in.", vbExclamation, "Missing Required Field"
-                ' Set focus To the missing field
-                field(0).SetFocus
-                ' Return False (validation failed)
-                ValidateRequiredFields = False
-             Exit Function
-            End If
-        Next field
 
-        ' If all fields are valid, return True
-        ValidateRequiredFields = True
+        ' Add CountriesListBx only If MultipleCountriesCbx is checked
+        If Me.MultipleCountriesCbx.value Then
+            requiredFields.aDD Array(Me.CountriesListBx, "Countries List")
+        End If
+
+        ' Add RolesListBox only If ClientCbx is checked
+        If Me.ClientCbx.value Then
+            requiredFields.aDD Array(Me.RolesListBox, "Roles List (at least two roles must be selected)")
+        End If
+
+        Set GetRequiredFieldsCollection = requiredFields
      Exit Function
 
  ErrorHandler:
-        ' Log the error And return False
-        LogError "Error in ValidateRequiredFields: " & Err.Description, "CRITICAL", Err.Number, "Validation", "ValidateRequiredFields"
-        ValidateRequiredFields = False
+        LogError "Error in GetRequiredFieldsCollection: " & Err.Description & " | Control: " & Err.Source, "CRITICAL", Err.Number, "Validation", "GetRequiredFieldsCollection"
+        Set GetRequiredFieldsCollection = New Collection ' Return empty collection To avoid cascading errors
 End Function
+Private Function IsFieldMissing(field As Variant) As Boolean
+    On Error Goto ErrorHandler
+        Dim fieldControl As Control
+        Dim fieldValue As Variant
+
+        ' Extract the field control
+        Set fieldControl = field(0)
+
+        ' Log the control being checked
+        LogError "Checking field: " & field(1) & " | Control Type: " & TypeName(fieldControl), "INFO", 0, "Validation", "IsFieldMissing"
+
+        ' Handle list boxes
+        If TypeOf fieldControl Is ListBox Then
+            If fieldControl.Name = "RolesListBox" And Me.ClientCbx.value Then
+                IsFieldMissing = (fieldControl.ItemsSelected.Count < 2)
+            Elseif fieldControl.Name = "CountriesListBx" And Me.MultipleCountriesCbx.value Then
+                IsFieldMissing = (fieldControl.ItemsSelected.Count = 0)
+            Else
+                IsFieldMissing = (fieldControl.ItemsSelected.Count = 0)
+            End If
+        Elseif TypeOf fieldControl Is CheckBox Then
+            IsFieldMissing = IsNull(fieldControl.value)
+        Else
+            fieldValue = fieldControl.value
+            IsFieldMissing = (IsNull(fieldValue) Or fieldValue = "")
+        End If
+
+        ' Log the result of the check
+        LogError "Field missing status: " & IsFieldMissing, "INFO", 0, "Validation", "IsFieldMissing"
+     Exit Function
+
+ ErrorHandler:
+        LogError "Error in IsFieldMissing: " & Err.Description & " | Control: " & fieldControl.Name, "CRITICAL", Err.Number, "Validation", "IsFieldMissing"
+        IsFieldMissing = True ' Treat errors As missing fields
+End Function
+
+Private Sub HandleMissingField(field As Variant)
+    On Error Goto ErrorHandler
+        Dim fieldControl As Control
+        Dim fieldName As String
+
+        ' Extract the field control And its display name
+        Set fieldControl = field(0)
+        fieldName = field(1)
+
+        ' Display a message To the user
+        If TypeOf fieldControl Is ListBox Then
+            If fieldControl.Name = "RolesListBox" And Me.ClientCbx.value = True Then
+                MsgBox "You must Select at least two roles in '" & fieldName & "'.", vbExclamation, "Missing Required Selection"
+            Elseif fieldControl.Name = "CountriesListBx" And Me.MultipleCountriesCbx.value = True Then
+                MsgBox "You must Select at least one country in '" & fieldName & "'.", vbExclamation, "Missing Required Selection"
+            Else
+                MsgBox "You must Select at least one item in '" & fieldName & "'.", vbExclamation, "Missing Required Selection"
+            End If
+        Elseif TypeOf fieldControl Is CheckBox Then
+            MsgBox "The checkbox '" & fieldName & "' must be checked.", vbExclamation, "Missing Required Checkbox"
+        Else
+            MsgBox "The field '" & fieldName & "' is required. Please fill it in.", vbExclamation, "Missing Required Field"
+        End If
+
+        ' Set focus To the missing field
+        fieldControl.SetFocus
+     Exit Sub
+
+ ErrorHandler:
+        LogError "Error in HandleMissingField: " & Err.Description & " | Control: " & fieldControl.Name, "CRITICAL", Err.Number, "Validation", "HandleMissingField"
+End Sub
 '=======================================================
 ' Core Transaction Handler
 '=======================================================
@@ -89,16 +232,18 @@ Private Sub AddPartyBtn_Click()
         Dim ws As DAO.Workspace
         Dim PartyID As Long, locationID As Long
         Dim success As Boolean, CountryCode As Long
-        Dim i As Variant, RoleID As Long, y As Variant
+        Dim i As Variant, RoleID As Long, y As Variant, x As Variant, ServiceCategoryID As Long
+        Dim missingField As String
 
         LogError "Process initialization", "INFO", 0, "Form", PROC_NAME
+
         ' =======================================================
         ' Step 1: Validate required fields before starting the transaction
         ' =======================================================
-        If ValidateRequiredFields() Then
-            LogError "Validation failed. Required fields are missing.", "VALIDATION", 0, "Form", PROC_NAME
-            MsgBox "Validation failed. Required fields are missing"
-         Exit Sub ' Stop the operation If validation fails
+        missingField = ValidateRequiredFields()
+        If missingField <> "" Then
+            LogError "Validation failed. Missing Or invalid field: " & missingField, "VALIDATION", 0, "Form", PROC_NAME
+         Exit Sub
         End If
 
         Set ws = DBEngine.Workspaces(0)
@@ -151,27 +296,42 @@ Private Sub AddPartyBtn_Click()
                                                 If Not success Then Goto Rollback
                                                 Next y
 
-                                                ' Final commit
-                                                ws.CommitTrans
-                                                LogError "Transaction completed successfully", "SUCCESS", 0, "Form", PROC_NAME
-                                                MsgBox "Operation completed successfully!", vbInformation
-                                                ResetForm
-                                             Exit Sub
+                                                ' ServiceCategory assignment
+                                                For Each x In Me.ServiceCategoryList.ItemsSelected
+                                                    ServiceCategoryID = Me.ServiceCategoryList.Column(0, x)
+                                                    success = ExecuteInTransaction("AddPartyServiceCategory", PartyID, ServiceCategoryID)
+                                                    If Not success Then Goto Rollback
+                                                    Next x
+
+                                                    ' Final commit
+                                                    ws.CommitTrans
+                                                    LogError "Transaction completed successfully", "SUCCESS", 0, "Form", PROC_NAME
+                                                    MsgBox "Operation completed successfully!", vbInformation
+                                                    ResetForm
+                                                    Goto Cleanup ' Skip Rollback And ErrorHandler
 
  TransactionError:
-                                                LogError "Transaction failure", "CRITICAL", Err.Number, "Form", PROC_NAME, "Line: " & Erl
-                                                Goto Rollback
+                                                        LogError "Transaction failure", "CRITICAL", Err.Number, "Form", PROC_NAME, "Line: " & Erl
+                                                        Goto Rollback
 
  Rollback:
-                                                    ws.Rollback
-                                                    LogError "Transaction rolled back", "CRITICAL", 0, "Form", PROC_NAME
-                                                    MsgBox "Operation failed. Check audit log.", vbExclamation
-                                                 Exit Sub
+                                                            ws.Rollback
+                                                            LogError "Transaction rolled back", "CRITICAL", 0, "Form", PROC_NAME
+                                                            MsgBox "Operation failed. Check audit log.", vbExclamation
+                                                            Goto Cleanup ' Skip ErrorHandler
 
  ErrorHandler:
-                                                    LogError Err.Description, "CRITICAL", Err.Number, "Form", PROC_NAME, _
-                                                    "PartyID: " & PartyID & " | LocationID: " & locationID
-                                                    Goto Rollback
+                                                                LogError Err.Description, "CRITICAL", Err.Number, "Form", PROC_NAME, _
+                                                                "PartyID: " & PartyID & " | LocationID: " & locationID
+                                                                Goto Rollback
+
+ Cleanup:
+                                                                    ' Ensure the Workspace is properly closed
+                                                                    If Not ws Is Nothing Then
+                                                                        ws.Close
+                                                                        Set ws = Nothing
+                                                                    End If
+                                                                 Exit Sub
 End Sub
 
 '=======================================================
@@ -185,6 +345,7 @@ Private Function ExecuteInTransaction( _
         Const PROC_NAME As String = "ExecuteInTransaction"
         Dim paramList As String
         Dim i As Long
+        Dim rst As DAO.Recordset ' Add this line
 
         ' Build parameter list manually
         paramList = ""
@@ -202,23 +363,19 @@ Private Function ExecuteInTransaction( _
          Case "AddParty"
             ExecuteInTransaction = AddParty()
          Case "AddLocation"
-            ' Explicitly convert params(0) To Long
             ExecuteInTransaction = AddLocation(CLng(params(0)))
          Case "AddPartyLocation"
-            ' Explicitly convert params(0) And params(1) To Long
             ExecuteInTransaction = AddPartyLocation(CLng(params(0)), CLng(params(1)), CBool(params(2)))
          Case "AddVendorCountry"
-            ' Explicitly convert params(0) And params(1) To Long
             ExecuteInTransaction = AddVendorCountry(CLng(params(0)), CLng(params(1)))
          Case "AddPartyContact"
-            ' Explicitly convert params(0) And params(1) To Long
             ExecuteInTransaction = AddPartyContact(CLng(params(0)), CLng(params(1)))
          Case "AddPartyDetails"
-            ' Explicitly convert params(0) To Long And params(2) To Boolean
             ExecuteInTransaction = AddPartyDetails(CLng(params(0)), CStr(params(1)), CBool(params(2)))
          Case "AddPartyRole"
-            ' Explicitly convert params(0) And params(1) To Long
             ExecuteInTransaction = AddPartyRole(CLng(params(0)), CLng(params(1)))
+         Case "AddPartyServiceCategory"
+            ExecuteInTransaction = AddPartyServiceCategory(CLng(params(0)), CLng(params(1)))
          Case Else
             LogError "Invalid operation", "ERROR", 9001, "Transaction", PROC_NAME
             ExecuteInTransaction = -1
@@ -247,6 +404,14 @@ Private Function AddParty() As Long
          Exit Function
         End If
 
+        ' Check For duplicate PartyName
+        If PartyNameExists(Me.PartyName) Then
+            LogError "Duplicate PartyName found: " & Me.PartyName, "VALIDATION", 1002, "Database", PROC_NAME
+            MsgBox "A party With the name '" & Me.PartyName & "' already exists. Please use a unique name.", vbExclamation, "Duplicate Party Name"
+            AddParty = -1
+         Exit Function
+        End If
+
         ' Generate ID
         CorpID = GeneratePartyCode()
         If CorpID = -1 Then Exit Function
@@ -264,7 +429,9 @@ Private Function AddParty() As Long
             End With
 
             LogError "Party created: " & AddParty, "SUCCESS", 0, "Database", PROC_NAME
+
  Cleanup:
+            ' Ensure the Recordset is properly closed
             If Not rst Is Nothing Then
                 rst.Close
                 Set rst = Nothing
@@ -275,6 +442,36 @@ Private Function AddParty() As Long
             LogError "Failed To create party", "CRITICAL", Err.Number, "Database", PROC_NAME
             AddParty = -1
             Resume Cleanup
+End Function
+Private Function PartyNameExists(PartyName As String) As Boolean
+    On Error Goto ErrorHandler
+        Const PROC_NAME As String = "PartyNameExists"
+        Dim rst As DAO.Recordset
+        Dim sql As String
+
+        ' Sanitize the PartyName To prevent SQL injection
+        PartyName = Replace(PartyName, "'", "''")
+
+        ' Build the SQL query
+        sql = "Select 1 FROM PartiesT_V13 WHERE PartyName = '" & PartyName & "'"
+
+        ' Execute the query
+        Set rst = CurrentDb.OpenRecordset(sql, dbOpenSnapshot)
+        PartyNameExists = Not rst.EOF
+
+        LogError "PartyNameExists check completed: " & PartyNameExists, "INFO", 0, "Database", PROC_NAME
+
+ Cleanup:
+        If Not rst Is Nothing Then
+            rst.Close
+            Set rst = Nothing
+        End If
+     Exit Function
+
+ ErrorHandler:
+        LogError "Failed To check PartyName existence: " & Err.Description, "CRITICAL", Err.Number, "Database", PROC_NAME
+        PartyNameExists = False
+        Resume Cleanup
 End Function
 Private Function AddLocation(PartyID As Long) As Long
     On Error Goto ErrorHandler
@@ -550,7 +747,62 @@ Private Function AddPartyRole(PartyID As Long, RoleID As Long) As Boolean
         AddPartyRole = False
         Resume Cleanup
 End Function
+Private Function AddPartyServiceCategory(PartyID As Long, ServiceCategoryID As Long) As Boolean
+    On Error Goto ErrorHandler
+        Const PROC_NAME As String = "AddPartyServiceCategory"
+        Dim rst As DAO.Recordset
 
+        LogError "Starting AddPartyServiceCategory", "INFO", 0, "Database", PROC_NAME, _
+        "PartyID: " & PartyID & " | ServiceCategoryID: " & ServiceCategoryID
+
+        ' Validate PartyID
+        If Not RecordExists("PartiesT_V13", "CorpID", PartyID) Then
+            LogError "Invalid PartyID: " & PartyID, "VALIDATION", 6001, "Database", PROC_NAME
+            AddPartyServiceCategory = False
+         Exit Function
+        End If
+
+        ' Validate ServiceCategoryID
+        If Not RecordExists("ServiceCategoryT_V13", "ID", ServiceCategoryID) Then
+            LogError "Invalid ServiceCategoryID: " & ServiceCategoryID, "VALIDATION", 6002, "Database", PROC_NAME
+            AddPartyServiceCategory = False
+         Exit Function
+        End If
+
+        ' Check For duplicates
+        If IsDuplicatePartyServiceCategory(PartyID, ServiceCategoryID) Then
+            LogError "Duplicate PartyServiceCategory entry", "VALIDATION", 6003, "Database", PROC_NAME
+            AddPartyServiceCategory = False
+         Exit Function
+        End If
+
+        ' Add record
+        LogError "Opening PartyServiceCategoriesJT_V13", "INFO", 0, "Database", PROC_NAME
+        Set rst = CurrentDb.OpenRecordset("PartyServiceCategoryJT_V13", dbOpenDynaset)
+        With rst
+            LogError "Adding New record", "INFO", 0, "Database", PROC_NAME
+            .AddNew
+            !CorpID = PartyID
+            !ServiceCategoryID = ServiceCategoryID
+            .Update
+        End With
+
+        LogError "PartyServiceCategory added", "SUCCESS", 0, "Database", PROC_NAME
+        AddPartyServiceCategory = True
+
+ Cleanup:
+        If Not rst Is Nothing Then
+            LogError "Closing recordset", "INFO", 0, "Database", PROC_NAME
+            rst.Close
+            Set rst = Nothing
+        End If
+     Exit Function
+
+ ErrorHandler:
+        LogError "Failed To add PartyServiceCategory: " & Err.Description, "CRITICAL", Err.Number, "Database", PROC_NAME
+        AddPartyServiceCategory = False
+        Resume Cleanup
+End Function
 '=======================================================
 ' Utility Functions
 '=======================================================
@@ -703,7 +955,29 @@ Private Function IsDuplicatePartyRole(PartyID As Long, RoleID As Long) As Boolea
         LogError "Failed To check duplicate PartyRole", "CRITICAL", Err.Number, "Validation", PROC_NAME
         IsDuplicatePartyRole = False
 End Function
+Private Function IsDuplicatePartyServiceCategory(PartyID As Long, ServiceCategoryID As Long) As Boolean
+    On Error Goto ErrorHandler
+        Const PROC_NAME As String = "IsDuplicatePartyServiceCategory"
+        Dim rst As DAO.Recordset
 
+        Set rst = CurrentDb.OpenRecordset( _
+        "Select CorpID FROM PartyServiceCategoriesJT_V13 " & _
+        "WHERE CorpID = " & PartyID & " And ServiceCategoryID = " & ServiceCategoryID, _
+        dbOpenSnapshot _
+        )
+        IsDuplicatePartyServiceCategory = Not rst.EOF
+
+        If IsDuplicatePartyServiceCategory Then
+            LogError "Duplicate PartyServiceCategory found", "WARNING", 7001, "Validation", PROC_NAME
+        Else
+            LogError "No duplicate PartyServiceCategory found", "INFO", 0, "Validation", PROC_NAME
+        End If
+     Exit Function
+
+ ErrorHandler:
+        LogError "Failed To check duplicate PartyServiceCategory", "CRITICAL", Err.Number, "Validation", PROC_NAME
+        IsDuplicatePartyServiceCategory = False
+End Function
 Private Sub ResetForm()
     On Error Resume Next ' Skip errors For controls without a Value Property
 
@@ -722,19 +996,19 @@ Private Sub ResetForm()
     Me.SecondaryEmail.value = Null
     Me.Phone.value = Null
     Me.CreditLimit.value = 15000 ' 15000 is the default value
-    Me.Deposit.value = 15000 ' 0 is the default value
+    Me.Deposit.value = 0 ' 0 is the default value
     Me.Currency.value = "USD"  ' "USD" is the default value
     Me.ClientRating.value = 3 ' 3 is the default value
     Me.PartyDescription.value = Null
     Me.VendorRating.value = 3 ' 3 is the default value
     Me.CountriesListBx.RowSource = Me.CountriesListBx.RowSource
-
+    Me.ServiceCategoryList.RowSource = Me.ServiceCategoryList.RowSource
     Me.RolesListBox.RowSource = Me.RolesListBox.RowSource
     Me.MultipleCountriesCbx.value = False
-
+    MultipleCountriesCbx_AfterUpdate
     ' Reset checkboxes And toggle buttons To default state
     Me.ClientCbx.value = False
-    ClientCbx_Click
+    ClientCbx_AfterUpdate
     Me.IsActive.value = True ' Default To "Active"
 
     ' Set focus To the first input field
@@ -742,7 +1016,18 @@ Private Sub ResetForm()
 
     On Error Goto 0 ' Reset error handling
 End Sub
-Private Sub MultipleCountriesCbx_Click()
+
+Private Sub AgreementExpiry_GotFocus()
+    InputDateField AgreementExpiry, "Select a date To use this on your form"
+End Sub
+Private Sub Form_Load()
+    Me.ClientCbx.value = 0
+    Me.MultipleCountriesCbx.value = 0
+    ClientCbx_AfterUpdate
+    MultipleCountriesCbx_AfterUpdate
+End Sub
+
+Private Sub MultipleCountriesCbx_AfterUpdate()
     If Me.MultipleCountriesCbx.value = -1 Then
         Me.CountriesListBx.Visible = True
         Me.CountriesListL.Visible = True
@@ -751,16 +1036,13 @@ Private Sub MultipleCountriesCbx_Click()
         Me.CountriesListL.Visible = False
     End If
 End Sub
-Private Sub ClientCbx_Click()
+Private Sub ClientCbx_AfterUpdate()
     If Me.ClientCbx.value = -1 Then
         Me.ClientRating.Visible = True
     Else
         Me.ClientRating.Visible = False
     End If
 End Sub
-
-
-
 Private Sub City_GotFocus()
     If IsNull(Me.Country.value) Then
         MsgBox "Select a country first", vbExclamation
@@ -843,12 +1125,12 @@ Private Sub Country_AfterUpdate()
 End Sub
 
 ' Handle date selection For the DateSigned field
-Private Sub DateSigned_Click()
+Private Sub DateSigned_GotFocus()
     InputDateField DateSigned, "Select a date To use this on your form"
 End Sub
 
 ' Handle date selection For the AOCExpiry field
-Private Sub AOCExpiry_Click()
+Private Sub AOCExpiry_GotFocus()
     InputDateField AOCExpiry, "Select a date To use this on your form"
 End Sub
 
