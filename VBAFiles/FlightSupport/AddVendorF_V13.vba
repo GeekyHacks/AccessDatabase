@@ -110,7 +110,7 @@ Private Function IsValidEmail(email As String) As Boolean
         regex.Pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
         ' Check If the email matches the pattern
-        IsValidEmail = regex.Test(email)
+        IsValidEmail = regex.test(email)
 
         LogError "Email validation completed: " & IsValidEmail, "INFO", 0, "Validation", PROC_NAME, "Email: " & email
      Exit Function
@@ -390,7 +390,6 @@ Private Function ExecuteInTransaction( _
         LogError "Operation failed: " & Err.Description, "CRITICAL", Err.Number, "Transaction", PROC_NAME
         ExecuteInTransaction = -1
 End Function
-
 Private Function AddParty() As Long
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddParty"
