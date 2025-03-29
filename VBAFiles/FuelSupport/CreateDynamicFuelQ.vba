@@ -4,14 +4,14 @@ Option Explicit
 ' Enhanced Logging System
 '=======================================================
 Private Sub LogError( _
-    Byval ErrorMessage As String, _
-    Byval ErrorSource As String, _
-    Optional Byval ErrorNumber As Long = 0, _
-    Optional Byval ModuleName As String = "", _
-    Optional Byval ProcedureName As String = "", _
-    Optional Byval AdditionalInfo As String = "" _
+    ByVal ErrorMessage As String, _
+    ByVal ErrorSource As String, _
+    Optional ByVal ErrorNumber As Long = 0, _
+    Optional ByVal ModuleName As String = "", _
+    Optional ByVal ProcedureName As String = "", _
+    Optional ByVal AdditionalInfo As String = "" _
     )
-    On Error Goto LogError_Handler
+    On Error GoTo LogError_Handler
         Dim filePath As String
         Dim fileNumber As Integer
         Dim logMessage As String
@@ -33,7 +33,7 @@ Private Sub LogError( _
         Close #fileNumber
      Exit Sub
 
- LogError_Handler:
+LogError_Handler:
         MsgBox "Logging System Failure: " & Err.Description, vbCritical
 End Sub
 
@@ -41,7 +41,7 @@ End Sub
 ' Main Fuel Table Creation Function
 '=======================================================
 Public Function CreateDynamicFuelQuery() As Boolean
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
         Const PROC_NAME As String = "CreateDynamicFuelQuery"
 
         Dim db As DAO.Database
@@ -68,7 +68,7 @@ Public Function CreateDynamicFuelQuery() As Boolean
             LogError "No vendor tables found in aviationServicesT_EX", "Data Error", 0, "FuelModule", PROC_NAME
             MsgBox "No fuel tables found in aviationServicesT_EX!", vbExclamation
             CreateDynamicFuelQuery = False
-            Goto Cleanup
+            GoTo Cleanup
             End If
 
             ' Create temporary table
@@ -79,7 +79,7 @@ Public Function CreateDynamicFuelQuery() As Boolean
                 Err.Clear
             End If
 
-            On Error Goto ErrorHandler
+            On Error GoTo ErrorHandler
                 db.Execute "CREATE TABLE FuelSupport_FuelPricesT_V12 (" & _
                 "Airport TEXT(55), " & _
                 "FlightType TEXT(55), " & _
@@ -99,12 +99,12 @@ Public Function CreateDynamicFuelQuery() As Boolean
 
                     If tblName = "" Then
                         LogError "Empty table name encountered", "Warning", 0, "FuelModule", PROC_NAME
-                        Goto NextRecord
+                        GoTo NextRecord
                         End If
 
                         If Not TableExists(db, tblName) Then
                             LogError "Table '" & tblName & "' does Not exist", "Validation", 0, "FuelModule", PROC_NAME
-                            Goto NextRecord
+                            GoTo NextRecord
                             End If
 
                             ' Insert data into temp table
@@ -127,7 +127,7 @@ Public Function CreateDynamicFuelQuery() As Boolean
                                 Err.Clear
                             End If
 
- NextRecord:
+NextRecord:
                             rsSource.MoveNext
                         Loop
 
@@ -136,7 +136,7 @@ Public Function CreateDynamicFuelQuery() As Boolean
                             LogError "No data inserted from any vendor tables", "Critical", 0, "FuelModule", PROC_NAME
                             MsgBox "Failed To load any vendor data!", vbCritical
                             CreateDynamicFuelQuery = False
-                            Goto Cleanup
+                            GoTo Cleanup
                             End If
 
                             ' Verify temp table contents
@@ -154,7 +154,7 @@ Public Function CreateDynamicFuelQuery() As Boolean
                             CreateDynamicFuelQuery = True
                             LogError "Function completed successfully", "Info", 0, "FuelModule", PROC_NAME
 
- Cleanup:
+Cleanup:
                             On Error Resume Next
                             rsSource.Close
                             Set rsSource = Nothing
@@ -163,7 +163,7 @@ Public Function CreateDynamicFuelQuery() As Boolean
                             Set db = Nothing
                          Exit Function
 
- ErrorHandler:
+ErrorHandler:
                             LogError Err.Description, "Runtime Error", Err.Number, "FuelModule", PROC_NAME, "Error occurred at step: " & Erl()
                             MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
                             CreateDynamicFuelQuery = False
@@ -173,7 +173,7 @@ End Function
 ' Valid Fuel Prices Table Creation
 '=======================================================
 Public Function CreateValidFuelPricesTable() As Boolean
-    On Error Goto ErrorHandler
+    On Error GoTo ErrorHandler
         Const PROC_NAME As String = "CreateValidFuelPricesTable"
 
         Dim db As DAO.Database
@@ -198,7 +198,7 @@ Public Function CreateValidFuelPricesTable() As Boolean
             LogError "No vendor tables found", "Data Error", 0, "FuelModule", PROC_NAME
             MsgBox "No fuel tables found in aviationServicesT_EX!", vbExclamation
             CreateValidFuelPricesTable = False
-            Goto Cleanup
+            GoTo Cleanup
             End If
 
             ' Create validated prices table
@@ -209,7 +209,7 @@ Public Function CreateValidFuelPricesTable() As Boolean
                 Err.Clear
             End If
 
-            On Error Goto ErrorHandler
+            On Error GoTo ErrorHandler
                 db.Execute "CREATE TABLE FuelSupport_ValidFuelPricesT_V12 (" & _
                 "Airport TEXT(55), " & _
                 "FlightType TEXT(55), " & _
@@ -230,12 +230,12 @@ Public Function CreateValidFuelPricesTable() As Boolean
 
                     If tblName = "" Then
                         LogError "Empty table name skipped", "Warning", 0, "FuelModule", PROC_NAME
-                        Goto NextRecord
+                        GoTo NextRecord
                         End If
 
                         If Not TableExists(db, tblName) Then
                             LogError "Missing table: " & tblName, "Validation", 0, "FuelModule", PROC_NAME
-                            Goto NextRecord
+                            GoTo NextRecord
                             End If
 
                             ' Insert only valid records (validity >= today)
@@ -259,7 +259,7 @@ Public Function CreateValidFuelPricesTable() As Boolean
                                 Err.Clear
                             End If
 
- NextRecord:
+NextRecord:
                             rsSource.MoveNext
                         Loop
 
@@ -268,7 +268,7 @@ Public Function CreateValidFuelPricesTable() As Boolean
                             LogError "No valid data inserted", "Critical", 0, "FuelModule", PROC_NAME
                             MsgBox "No valid fuel prices found!", vbCritical
                             CreateValidFuelPricesTable = False
-                            Goto Cleanup
+                            GoTo Cleanup
                             End If
 
                             ' Verify table contents
@@ -282,7 +282,7 @@ Public Function CreateValidFuelPricesTable() As Boolean
                             CreateValidFuelPricesTable = True
                             LogError "Function completed successfully", "Info", 0, "FuelModule", PROC_NAME
 
- Cleanup:
+Cleanup:
                             On Error Resume Next
                             rsSource.Close
                             Set rsSource = Nothing
@@ -290,7 +290,7 @@ Public Function CreateValidFuelPricesTable() As Boolean
                             Set db = Nothing
                          Exit Function
 
- ErrorHandler:
+ErrorHandler:
                             LogError Err.Description, "Runtime Error", Err.Number, "FuelModule", PROC_NAME, "Error at step: " & Erl()
                             MsgBox "Error " & Err.Number & ": " & Err.Description, vbCritical
                             CreateValidFuelPricesTable = False
@@ -299,10 +299,28 @@ End Function
 '=======================================================
 ' Helper Functions
 '=======================================================
+'=======================================================
+' Helper Functions
+'=======================================================
 Public Function TableExists(db As DAO.Database, TableName As String) As Boolean
-    On Error Resume Next
+    On Error GoTo ErrorHandler
+    Const PROC_NAME As String = "TableExists"
+    
     Dim tdf As DAO.TableDef
+    
+    ' Log function start
+    LogError "Checking existence of table: " & TableName, "Info", 0, "FuelModule", PROC_NAME
+    
     Set tdf = db.TableDefs(TableName)
-    TableExists = (Err.Number = 0)
-    On Error Goto 0
+    TableExists = True
+    
+    ' Log success
+    LogError "Table '" & TableName & "' exists", "Info", 0, "FuelModule", PROC_NAME
+    Exit Function
+    
+ErrorHandler:
+    TableExists = False
+    ' Log the error/non-existence
+    LogError "Table '" & TableName & "' does not exist", "Info", Err.Number, "FuelModule", PROC_NAME
+    Resume Next
 End Function

@@ -577,3 +577,320 @@ A party can offer multiple services, and a service can be offered by multiple pa
 Operator-Aircraft Relationship:
 
 An operator can manage multiple aircraft, and an aircraft can be managed by multiple operators (OPERATOR_AIRCRAFTS).
+
+
+Essential Financial Tracking Tables and Relationships
+Here's a comprehensive set of tables and their relationships to track your financial status with both clients and vendors. I'll focus on the core tables needed for financial tracking, with clear relationship definitions.
+
+Core Entity Tables
++-------------------+
+|     PARTIES       |
++-------------------+
+| ID (PK)           |
+| NAME              |
+| IS_ACTIVE         |
+| IS_DELETED        |
+| CREATED_BY        |
+| CREATE_DATE       |
+| UPDATED_BY        |
+| UPDATE_DATE       |
++-------------------+
+
++-------------------+
+|     ROLES         |
++-------------------+
+| ID (PK)           |
+| ROLE_NAME         | <- Client, Vendor, etc.
+| DESCRIPTION       |
++-------------------+
+
++-------------------+
+| PARTY_ROLES       |
++-------------------+
+| PARTY_ID (PK, FK) |
+| ROLE_ID (PK, FK)  |
+| IS_ACTIVE         |
++-------------------+
+Operations Tables
++-------------------+
+|    OPERATIONS     |
++-------------------+
+| ID (PK)           |
+| OPERATION_NUMBER  |
+| CLIENT_ID (FK)    | <- References PARTIES
+| OPERATION_DATE    |
+| STATUS            | <- Planned/In-Progress/Completed
+| DESCRIPTION       |
+| CREATED_BY        |
+| CREATE_DATE       |
++-------------------+
+
++-------------------+
+| OPERATION_SERVICES|
++-------------------+
+| ID (PK)           |
+| OPERATION_ID (FK) |
+| SERVICE_ID (FK)   |
+| VENDOR_ID (FK)    | <- References PARTIES
+| SERVICE_DATE      |
+| STATUS            | <- Requested/Delivered/Completed
+| VENDOR_COST       | <- Expected cost to pay vendor
+| CLIENT_PRICE      | <- Price to charge client
+| CURRENCY_ID (FK)  |
+| CLIENT_BILL_STATUS| <- Unbilled/Billed
+| VENDOR_BILL_STATUS| <- Unbilled/Billed
+| DESCRIPTION       |
++-------------------+
+Financial Tracking Tables
++-------------------+
+|     INVOICES      |
++-------------------+
+| ID (PK)           |
+| INVOICE_NUMBER    |
+| INVOICE_TYPE      | <- Client/Vendor
+| PARTY_ID (FK)     | <- Client or Vendor
+| INVOICE_DATE      |
+| DUE_DATE          |
+| CURRENCY_ID (FK)  |
+| SUBTOTAL          |
+| TAX_AMOUNT        |
+| TOTAL_AMOUNT      |
+| BALANCE_DUE       | <- Tracks remaining balance
+| STATUS            | <- Draft/Issued/Partial/Paid/Overdue
+| OPERATION_ID (FK) | <- Optional link to operation
+| CREATED_BY        |
+| CREATE_DATE       |
++-------------------+
+
++-------------------+
+|   INVOICE_ITEMS   |
++-------------------+
+| ID (PK)           |
+| INVOICE_ID (FK)   |
+| OPERATION_SVC_ID  | <- References OPERATION_SERVICES
+| DESCRIPTION       |
+| QUANTITY          |
+| UNIT_PRICE        |
+| AMOUNT            |
+| TAX_RATE          |
+| TAX_AMOUNT        |
++-------------------+
+
++-------------------+
+|     PAYMENTS      |
++-------------------+
+| ID (PK)           |
+| PAYMENT_NUMBER    |
+| PAYMENT_TYPE      | <- Received/Made (client/vendor)
+| PARTY_ID (FK)     | <- Client or Vendor
+| PAYMENT_DATE      |
+| PAYMENT_METHOD    | <- Cash/Check/Transfer
+| CURRENCY_ID (FK)  |
+| AMOUNT            |
+| REFERENCE_NUMBER  | <- Check/transaction number
+| NOTES             |
+| CREATED_BY        |
+| CREATE_DATE       |
++-------------------+
+
++-------------------+
+| PAYMENT_ALLOCATIONS|
++-------------------+
+| ID (PK)           |
+| PAYMENT_ID (FK)   |
+| INVOICE_ID (FK)   |
+| AMOUNT_APPLIED    |
+| CREATED_BY        |
+| CREATE_DATE       |
++-------------------+
+
++-------------------+
+| ACCOUNT_BALANCES  |
++-------------------+
+| ID (PK)           |
+| PARTY_ID (FK)     | <- Client or Vendor
+| BALANCE_TYPE      | <- Receivable/Payable
+| CURRENCY_ID (FK)  |
+| CURRENT_BALANCE   |
+| LAST_UPDATED      |
++-------------------+
+Supporting Tables
++-------------------+
+|     SERVICES      |
++-------------------+
+| ID (PK)           |
+| SERVICE_NAME      |
+| DESCRIPTION       |
+| IS_ACTIVE         |
++-------------------+
+
++-------------------+
+|    CURRENCIES     |
++-------------------+
+| ID (PK)           |
+| CURRENCY_CODE     |
+| CURRENCY_NAME     |
+| SYMBOL            |
++-------------------+
+Key Relationships
+PARTIES to PARTY_ROLES
+
+One-to-many: A party can have multiple roles
+Relationship: PARTIES.ID = PARTY_ROLES.PARTY_ID
+PARTIES to OPERATIONS
+
+One-to-many: A client can have multiple operations
+Relationship: PARTIES.ID = OPERATIONS.CLIENT_ID
+OPERATIONS to OPERATION_SERVICES
+
+One-to-many: An operation can have multiple services
+Relationship: OPERATIONS.ID = OPERATION_SERVICES.OPERATION_ID
+PARTIES to OPERATION_SERVICES
+
+One-to-many: A vendor can provide multiple services
+Relationship: PARTIES.ID = OPERATION_SERVICES.VENDOR_ID
+OPERATION_SERVICES to INVOICE_ITEMS
+
+One-to-many: A service can appear on multiple invoice items
+Relationship: OPERATION_SERVICES.ID = INVOICE_ITEMS.OPERATION_SVC_ID
+PARTIES to INVOICES
+
+One-to-many: A party can have multiple invoices
+Relationship: PARTIES.ID = INVOICES.PARTY_ID
+INVOICES to INVOICE_ITEMS
+
+One-to-many: An invoice can have multiple items
+Relationship: INVOICES.ID = INVOICE_ITEMS.INVOICE_ID
+PARTIES to PAYMENTS
+
+One-to-many: A party can make/receive multiple payments
+Relationship: PARTIES.ID = PAYMENTS.PARTY_ID
+PAYMENTS to PAYMENT_ALLOCATIONS
+
+One-to-many: A payment can be allocated to multiple invoices
+Relationship: PAYMENTS.ID = PAYMENT_ALLOCATIONS.PAYMENT_ID
+INVOICES to PAYMENT_ALLOCATIONS
+
+One-to-many: An invoice can receive multiple payment allocations
+Relationship: INVOICES.ID = PAYMENT_ALLOCATIONS.INVOICE_ID
+PARTIES to ACCOUNT_BALANCES
+
+One-to-many: A party can have multiple account balances (different currencies)
+Relationship: PARTIES.ID = ACCOUNT_BALANCES.PARTY_ID
+Financial Tracking Workflow
+Client Billing Process
+Create OPERATIONS record for a new client operation
+
+Add services to OPERATION_SERVICES with:
+
+CLIENT_PRICE (what to charge client)
+CLIENT_BILL_STATUS = "Unbilled"
+When ready to bill client:
+
+Create INVOICES record with:
+INVOICE_TYPE = "Client"
+PARTY_ID = client's ID
+STATUS = "Draft"
+Create INVOICE_ITEMS records for each service:
+Link to OPERATION_SERVICES
+Set amounts based on CLIENT_PRICE
+Update OPERATION_SERVICES:
+Set CLIENT_BILL_STATUS = "Billed"
+Update INVOICES:
+Calculate SUBTOTAL, TAX_AMOUNT, TOTAL_AMOUNT
+Set STATUS = "Issued"
+BALANCE_DUE = TOTAL_AMOUNT
+When client payment is received:
+
+Create PAYMENTS record with:
+PAYMENT_TYPE = "Received"
+PARTY_ID = client's ID
+Create PAYMENT_ALLOCATIONS to distribute payment:
+Link to INVOICES
+Set AMOUNT_APPLIED
+Update INVOICES:
+Reduce BALANCE_DUE
+Update STATUS based on payment (Partial/Paid)
+Update ACCOUNT_BALANCES for client
+Vendor Payment Process
+Record vendor services in OPERATION_SERVICES with:
+
+VENDOR_COST (what to pay vendor)
+VENDOR_BILL_STATUS = "Unbilled"
+When vendor bill is received or when proactively creating vendor bill:
+
+Create INVOICES record with:
+INVOICE_TYPE = "Vendor"
+PARTY_ID = vendor's ID
+STATUS = "Draft"
+Create INVOICE_ITEMS records for each service:
+Link to OPERATION_SERVICES
+Set amounts based on VENDOR_COST
+Update OPERATION_SERVICES:
+Set VENDOR_BILL_STATUS = "Billed"
+Update INVOICES:
+Calculate SUBTOTAL, TAX_AMOUNT, TOTAL_AMOUNT
+Set STATUS = "Issued"
+BALANCE_DUE = TOTAL_AMOUNT
+When paying vendor:
+
+Create PAYMENTS record with:
+PAYMENT_TYPE = "Made"
+PARTY_ID = vendor's ID
+Create PAYMENT_ALLOCATIONS to distribute payment:
+Link to INVOICES
+Set AMOUNT_APPLIED
+Update INVOICES:
+Reduce BALANCE_DUE
+Update STATUS based on payment (Partial/Paid)
+Update ACCOUNT_BALANCES for vendor
+Key Financial Reports
+With this structure, you can generate:
+
+Accounts Receivable Aging Report
+
+Shows all outstanding client invoices grouped by age
+Based on INVOICES where INVOICE_TYPE = "Client" and STATUS ≠ "Paid"
+Accounts Payable Aging Report
+
+Shows all outstanding vendor invoices grouped by age
+Based on INVOICES where INVOICE_TYPE = "Vendor" and STATUS ≠ "Paid"
+Client Statement
+
+Shows all invoices and payments for a specific client
+Calculates current balance
+Vendor Statement
+
+Shows all invoices and payments for a specific vendor
+Calculates current balance
+Unbilled Services Report
+
+Shows services that haven't been billed to clients
+Based on OPERATION_SERVICES where CLIENT_BILL_STATUS = "Unbilled"
+Unbilled Vendor Services Report
+
+Shows services that haven't been billed from vendors
+Based on OPERATION_SERVICES where VENDOR_BILL_STATUS = "Unbilled"
+Operation Profitability Report
+
+Compares client revenue vs. vendor costs by operation
+Calculates profit margin
+Implementation in Access
+To implement this in Access:
+
+Create the tables with appropriate data types
+Set up relationships with referential integrity
+Create forms for:
+Client/Vendor management
+Operation and service tracking
+Invoice generation
+Payment processing
+Build queries for financial reporting
+Create reports for financial statements
+This structure provides a comprehensive system to track your financial status with both clients and vendors, allowing you to:
+
+Monitor what you owe vendors
+Track what clients owe you
+Generate invoices proactively
+Reconcile payments
+Analyze profitability
