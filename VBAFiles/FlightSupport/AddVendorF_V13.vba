@@ -629,7 +629,7 @@ Private Function AddPartyContact(PartyID As Long, locationID As Long) As Boolean
         AddPartyContact = False
         Resume Cleanup
 End Function
-Private Function AddPartyDetails(PartyID As Long, tableName As String, isClient As Boolean) As Boolean
+Private Function AddPartyDetails(PartyID As Long, TableName As String, isClient As Boolean) As Boolean
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddPartyDetails"
         Dim rst As DAO.Recordset
@@ -637,14 +637,14 @@ Private Function AddPartyDetails(PartyID As Long, tableName As String, isClient 
         Dim DescriptionText As String
 
         ' Validate inputs
-        If PartyID <= 0 Or tableName = "" Then
+        If PartyID <= 0 Or TableName = "" Then
             LogError "Invalid PartyID Or TableName", "VALIDATION", 5001, "Database", PROC_NAME
             AddPartyDetails = False
          Exit Function
         End If
 
         ' Add record
-        Set rst = CurrentDb.OpenRecordset(tableName, dbOpenDynaset)
+        Set rst = CurrentDb.OpenRecordset(TableName, dbOpenDynaset)
         With rst
             .AddNew
             !CorpID = PartyID
@@ -805,12 +805,12 @@ End Function
 '=======================================================
 ' Utility Functions
 '=======================================================
-Private Function RecordExists(tableName As String, fieldName As String, value As Variant) As Boolean
+Private Function RecordExists(TableName As String, fieldName As String, value As Variant) As Boolean
     On Error Goto ErrorHandler
         Dim rst As DAO.Recordset
         Dim sql As String
 
-        sql = "Select 1 FROM " & tableName & " WHERE " & fieldName & " = " & value
+        sql = "Select 1 FROM " & TableName & " WHERE " & fieldName & " = " & value
         Set rst = CurrentDb.OpenRecordset(sql, dbOpenSnapshot)
         RecordExists = Not rst.EOF
         rst.Close
@@ -1136,4 +1136,3 @@ End Sub
 Private Sub ResetBtn_Click()
     ResetForm
 End Sub
-
