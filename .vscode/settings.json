@@ -1,3 +1,4 @@
 {
-    "dotnet.defaultSolution": "TahseenPro.sln"
+    "dotnet.defaultSolution": "TahseenPro.sln",
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
