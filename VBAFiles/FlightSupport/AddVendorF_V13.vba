@@ -70,15 +70,24 @@ Private Function ValidateRequiredFields() As String
         Next field
 
         ' Validate email format For PrimaryEmail
-        If Not IsNull(Me.PrimaryEmail.value) And Me.PrimaryEmail.value <> "" Then
-            If Not IsValidEmail(Me.PrimaryEmail.value) Then
-                ValidateRequiredFields = "Primary Email (invalid format)"
-                MsgBox "The 'Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
-                Me.PrimaryEmail.SetFocus
+        ' Validate email format For PrimaryEmail
+        If Not IsNull(Me.VendorPrimaryEmail.value) And Me.VendorPrimaryEmail.value <> "" Then
+            If Not IsValidEmail(Me.VendorPrimaryEmail.value) Then
+                ValidateRequiredFields = "VendorPrimaryEmail (invalid format)"
+                MsgBox "The 'Vendor Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
+                Me.VendorPrimaryEmail.SetFocus
              Exit Function
             End If
         End If
-
+        ' Validate email format For PrimaryEmail
+        If Not IsNull(Me.ClientPrimaryEmail.value) And Me.ClientPrimaryEmail.value <> "" Then
+            If Not IsValidEmail(Me.ClientPrimaryEmail.value) Then
+                ValidateRequiredFields = "ClientPrimaryEmail (invalid format)"
+                MsgBox "The 'Client Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
+                Me.ClientPrimaryEmail.SetFocus
+             Exit Function
+            End If
+        End If
         ' Validate CountriesListBx only If MultipleCountriesCbx is checked
         If Me.MultipleCountriesCbx.value = True Then
             If Me.CountriesListBx.ItemsSelected.Count = 0 Then
@@ -136,7 +145,8 @@ Private Function GetRequiredFieldsCollection() As Collection
         requiredFields.aDD Array(Me.Address, "Address")
         requiredFields.aDD Array(Me.Deposit, "Deposit")
         requiredFields.aDD Array(Me.CreditLimit, "Credit Limit")
-        requiredFields.aDD Array(Me.PrimaryEmail, "Primary Email")
+        requiredFields.aDD Array(Me.VendorPrimaryEmail, "Vendor Primary Email")
+        requiredFields.aDD Array(Me.ClientPrimaryEmail, "Client Primary Email")
         requiredFields.aDD Array(Me.Phone, "Phone")
 
         ' Add CountriesListBx only If MultipleCountriesCbx is checked
@@ -232,6 +242,7 @@ Private Sub AddPartyBtn_Click()
         Dim i As Variant, selectedCount As Long
         Dim y As Variant
         Dim x As Variant
+        Dim g As Variant
         Dim RoleID As Variant
         Dim RoleName As String
         Dim ServiceCategoryID As Variant
@@ -296,10 +307,12 @@ Private Sub AddPartyBtn_Click()
                         End If
 
                         ' Contact information
-                        If ExecuteInTransaction("AddPartyContact", PartyID, locationID) = -1 Then
-                            Err.Raise 1005, , "AddPartyContact failed"
-                        End If
-
+                        For Each g In Me.RolesListBox.ItemsSelected
+                            RoleID = Me.RolesListBox.Column(0, g)
+                            If ExecuteInTransaction("AddPartyContact", PartyID, locationID, RoleID) = -1 Then
+                                Err.Raise 1005, , "AddPartyContact failed"
+                            End If
+                        Next g
                         ' Business details
                         If Me.ClientCbx.value Then
                             ' For Clients - add To ClientsT_V13 (active) And VendorsT_V13 (inactive)
@@ -382,7 +395,7 @@ Private Function ExecuteInTransaction( _
              Case "AddVendorCountry"
                 ExecuteInTransaction = AddVendorCountry(CLng(params(0)), CLng(params(1)), CStr(params(2)))
              Case "AddPartyContact"
-                ExecuteInTransaction = AddPartyContact(CLng(params(0)), CLng(params(1)))
+                ExecuteInTransaction = AddPartyContact(CLng(params(0)), CLng(params(1)), CLng(params(2)))
              Case "AddPartyDetails"
                 ExecuteInTransaction = AddPartyDetails(CLng(params(0)), CStr(params(1)), CBool(params(2)))
              Case "AddPartyRole"
@@ -540,18 +553,29 @@ Private Function PartyNameExists(PartyName As String) As Boolean
         PartyNameExists = False
         Resume Cleanup
 End Function
-Private Function AddPartyContact(PartyID As Long, locationID As Long) As Long
+Private Function AddPartyContact(PartyID As Long, locationID As Long, RoleID As Long) As Long
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddPartyContact"
+        Dim isVendor As Boolean
+        Dim isClient As Boolean
         Dim rst As DAO.Recordset
         Dim newID As Long
 
         ' Validate inputs
-        If PartyID <= 0 Or locationID <= 0 Then
-            LogError "Invalid PartyID Or LocationID", "VALIDATION", 4001, "Database", PROC_NAME
+        If PartyID <= 0 Or locationID <= 0 Or RoleID <= 0 Then
+            LogError "Invalid IDs provided", "VALIDATION", 4001, "Database", PROC_NAME
             AddPartyContact = -1
          Exit Function
         End If
+        ' === ROLE DETECTION ===
+        isVendor = (RoleID = GetVendorRoleID())
+        isClient = (RoleID = GetClientRoleID())
+
+        If RecordExists("PartyContactT_V13", , , "[CorpID] = " & PartyID & " And [Role_ID] = " & RoleID) Then
+            LogError "Duplicate contact For RoleID " & RoleID, "VALIDATION", 4003, "Database", PROC_NAME
+         Exit Function
+        End If
+
 
         ' Add record
         Set rst = CurrentDb.OpenRecordset("PartyContactT_V13", dbOpenDynaset, dbAppendOnly)
@@ -559,16 +583,28 @@ Private Function AddPartyContact(PartyID As Long, locationID As Long) As Long
             .AddNew
             !corpID = PartyID
             !locationID = locationID
-            !PrimaryEmail = Me.PrimaryEmail
-            !SecondaryEmail = Me.SecondaryEmail
-            !Phone = Me.Phone
+            !Role_ID = RoleID ' Store
+
+            ' --- Set contact info based on role ---
+            Select Case True
+             Case isVendor:
+                !PrimaryEmail = Nz(Me.VendorPrimaryEmail.value, "")
+                !SecondaryEmail = Nz(Me.SecondaryEmail.value, "")
+                !Phone = Nz(Me.Phone.value, "")
+
+             Case isClient:
+                !PrimaryEmail = Nz(Me.ClientPrimaryEmail.value, "")
+                !SecondaryEmail = Nz(Me.SecondaryEmail.value, "")
+                !Phone = Nz(Me.Phone.value, "")
+
+            End Select
+
             .Update
-            .Bookmark = .LastModified
-            newID = !ID ' Get the auto-generated ID
         End With
 
-        LogError "PartyContact added", "SUCCESS", 0, "Database", PROC_NAME
-        AddPartyContact = newID ' Return the New record ID
+        LogError "Contact added For " & "RoleID ", _
+        "SUCCESS", 0, "Database", PROC_NAME
+        AddPartyContact = 0
 
  Cleanup:
         If Not rst Is Nothing Then
@@ -578,9 +614,19 @@ Private Function AddPartyContact(PartyID As Long, locationID As Long) As Long
      Exit Function
 
  ErrorHandler:
-        LogError "Failed To add PartyContact", "CRITICAL", Err.Number, "Database", PROC_NAME
+        LogError "Failed To add contact For RoleID " & RoleID & Err.Description, _
+        "CRITICAL", Err.Number, "Database", PROC_NAME
         AddPartyContact = -1
         Resume Cleanup
+End Function
+Private Function GetVendorRoleID() As Long
+    ' Retrieve from config table Or constant
+    GetVendorRoleID = DLookup("ID", "RolesT_V13", "RoleName = 'Vendor'")
+End Function
+
+Private Function GetClientRoleID() As Long
+    ' Retrieve from config table Or constant
+    GetClientRoleID = DLookup("ID", "RolesT_V13", "RoleName = 'Client'")
 End Function
 Private Function AddPartyDetails(PartyID As Long, tableName As String, isClient As Boolean) As Long
     On Error Goto ErrorHandler
@@ -756,20 +802,51 @@ End Function
 '=======================================================
 ' Utility Functions
 '=======================================================
-Private Function RecordExists(tableName As String, fieldName As String, value As Variant) As Boolean
+Private Function RecordExists( _
+    tableName As String, _
+    Optional fieldName As String = "", _
+    Optional value As Variant, _
+    Optional whereClause As String = "" _
+    ) As Boolean
     On Error Goto ErrorHandler
         Dim rst As DAO.Recordset
         Dim sql As String
 
-        sql = "Select 1 FROM " & tableName & " WHERE " & fieldName & " = " & value
+        ' Build the SQL query With proper field delimiters
+        If whereClause <> "" Then
+            sql = "Select 1 FROM [" & tableName & "] WHERE " & whereClause
+        Elseif fieldName <> "" Then
+            sql = "Select 1 FROM [" & tableName & "] WHERE [" & fieldName & "] = " & ToSQLValue(value)
+        Else
+            sql = "Select 1 FROM [" & tableName & "] WHERE 1=0"
+        End If
+
+        ' Debug output (remove after testing)
+        Debug.Print "Executing SQL: " & sql
+
+        ' Execute query
         Set rst = CurrentDb.OpenRecordset(sql, dbOpenSnapshot)
         RecordExists = Not rst.EOF
         rst.Close
+
      Exit Function
 
  ErrorHandler:
-        LogError "Failed To check record existence: " & Err.Description, "CRITICAL", Err.Number, "Utility", "RecordExists"
+        LogError "Failed To check record existence", "CRITICAL", Err.Number, "Utility", "RecordExists", _
+        "SQL: " & sql & " | Error: " & Err.Description
         RecordExists = False
+End Function
+Private Function ToSQLValue(value As Variant) As String
+    ' Helper Function To properly format values
+    If IsNull(value) Then
+        ToSQLValue = "NULL"
+    Elseif VarType(value) = vbString Then
+        ToSQLValue = "'" & Replace(value, "'", "''") & "'"
+    Elseif VarType(value) = vbDate Then
+        ToSQLValue = "#" & Format(value, "yyyy-mm-dd") & "#"
+    Else
+        ToSQLValue = CStr(value)
+    End If
 End Function
 
 Private Function JoinParams(params As Variant) As String
@@ -909,7 +986,8 @@ Private Sub ResetForm()
     Me.Country.value = Null
     Me.City.value = Null
     Me.Address.value = Null
-    Me.PrimaryEmail.value = Null
+    Me.ClientPrimaryEmail.value = Null
+    Me.VendorPrimaryEmail.value = Null
     Me.SecondaryEmail.value = Null
     Me.Phone.value = Null
     Me.CreditLimit.value = 15000 ' 15000 is the default value
@@ -954,10 +1032,19 @@ Private Sub MultipleCountriesCbx_AfterUpdate()
     End If
 End Sub
 Private Sub ClientCbx_AfterUpdate()
-    If Me.ClientCbx.value = -1 Then
-        Me.ClientRating.Visible = True
-    Else
+    If Me.ClientCbx.value = 0 Then
+        Me.ClientPrimaryEmail.Visible = False
         Me.ClientRating.Visible = False
+    Else
+
+        Me.ClientRating.Visible = True
+        Me.ClientPrimaryEmail.Visible = True
+    End If
+
+    If Me.ClientCbx.value = -1 Then
+        MsgBox "Please add the Client Primary email, it might be different"
+        Me.ClientPrimaryEmail.Visible = True
+        Me.ClientRating.Visible = True
     End If
 End Sub
 Private Sub City_GotFocus()
@@ -970,7 +1057,7 @@ End Sub
 ' Close the form And undo any unsaved changes
 Private Sub CloseBtn_Click()
     Me.Undo
-    DoCmd.Close acForm, "AddVendorsF_V13"
+    DoCmd.Close acForm, "AddVendorF_V13"
 
 End Sub
 Function SanitizeSQL(sql As String, ParamArray params() As Variant) As String
@@ -1054,6 +1141,8 @@ End Sub
 Private Sub ResetBtn_Click()
     ResetForm
 End Sub
+
+
 
 
 
