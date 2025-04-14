@@ -70,15 +70,23 @@ Private Function ValidateRequiredFields() As String
         Next field
 
         ' Validate email format For PrimaryEmail
-        If Not IsNull(Me.PrimaryEmail.value) And Me.PrimaryEmail.value <> "" Then
-            If Not IsValidEmail(Me.PrimaryEmail.value) Then
-                ValidateRequiredFields = "Primary Email (invalid format)"
-                MsgBox "The 'Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
-                Me.PrimaryEmail.SetFocus
+        If Not IsNull(Me.ClientPrimaryEmail.value) And Me.ClientPrimaryEmail.value <> "" Then
+            If Not IsValidEmail(Me.ClientPrimaryEmail.value) Then
+                ValidateRequiredFields = "ClientPrimaryEmail (invalid format)"
+                MsgBox "The 'Client Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
+                Me.ClientPrimaryEmail.SetFocus
              Exit Function
             End If
         End If
-
+        ' Validate email format For PrimaryEmail
+        If Not IsNull(Me.VendorPrimaryEmail.value) And Me.VendorPrimaryEmail.value <> "" Then
+            If Not IsValidEmail(Me.VendorPrimaryEmail.value) Then
+                ValidateRequiredFields = "VendorPrimaryEmail (invalid format)"
+                MsgBox "The 'Vendor Primary Email' field must be a valid email address.", vbExclamation, "Invalid Email Format"
+                Me.VendorPrimaryEmail.SetFocus
+             Exit Function
+            End If
+        End If
         ' If all fields are valid, return an empty string
         ValidateRequiredFields = ""
      Exit Function
@@ -125,7 +133,8 @@ Private Function GetRequiredFieldsCollection() As Collection
         requiredFields.aDD Array(Me.Address, "Address")
         requiredFields.aDD Array(Me.Deposit, "Deposit")
         requiredFields.aDD Array(Me.CreditLimit, "Credit Limit")
-        requiredFields.aDD Array(Me.PrimaryEmail, "Primary Email")
+        requiredFields.aDD Array(Me.VendorPrimaryEmail, "Vendor Primary Email")
+        requiredFields.aDD Array(Me.ClientPrimaryEmail, "Client Primary Email")
         requiredFields.aDD Array(Me.Phone, "Phone")
 
         ' Add RolesListBox only If VendorChx is checked
@@ -153,7 +162,7 @@ Private Function IsFieldMissing(field As Variant) As Boolean
 
         ' Handle list boxes
         If TypeOf fieldControl Is ListBox Then
-            If fieldControl.Name = "RolesListBox" And Me.VendorChx.value Then
+            If fieldControl.Name = "RolesListBox" Or Me.VendorChx.value Then
                 IsFieldMissing = (fieldControl.ItemsSelected.Count < 2)
             Else
                 IsFieldMissing = (fieldControl.ItemsSelected.Count = 0)
@@ -208,8 +217,11 @@ Private Sub AddPartyBtn_Click()
         Const PROC_NAME As String = "AddPartyBtn_Click"
         Dim ws As DAO.Workspace
         Dim PartyID As Long, locationID As Long
-        Dim success As Boolean, CountryCode As Long
-        Dim i As Variant, RoleID As Long, y As Variant, x As Variant, ServiceCategoryID As Long
+        Dim CountryCodes() As Long, CountryNames() As String
+        Dim success As Boolean
+        Dim selectedCount As Long
+        Dim RoleName As String
+        Dim i As Variant, RoleID As Long, y As Variant, x As Variant, ServiceCategoryID As Long, g As Variant
         Dim missingField As String
 
         LogError "Process initialization", "INFO", 0, "Form", PROC_NAME
@@ -237,67 +249,70 @@ Private Sub AddPartyBtn_Click()
             On Error Goto ErrorHandler
                 PartyID = ExecuteInTransaction("AddParty")
                 If PartyID = -1 Then Goto Rollback
-
+                    ' Add party location
                     locationID = ExecuteInTransaction("AddLocation", PartyID) ' Now handles IsPrimary internally
                     If locationID = -1 Then Goto Rollback
-
-                        ' Simplified - no longer needs IsPrimary parameter
-                        success = ExecuteInTransaction("AddPartyLocation", PartyID, locationID)
-                        If Not success Then Goto Rollback
-
-                            ' Contact information (unchanged)
-                            success = ExecuteInTransaction("AddPartyContact", PartyID, locationID)
+                        ' Add party contact
+                        For Each g In Me.RolesListBox.ItemsSelected
+                            RoleID = Me.RolesListBox.Column(0, g)
+                            success = ExecuteInTransaction("AddPartyContact", PartyID, locationID, RoleID)
                             If Not success Then Goto Rollback
+                            Next g
 
-                                ' Business details (now includes IsActive)
-                                If Me.VendorChx.value Then
-                                    success = ExecuteInTransaction("AddPartyDetails", PartyID, "VendorsT_V13", True)
-                                    If Not success Then Goto Rollback
-                                        success = ExecuteInTransaction("AddPartyDetails", PartyID, "ClientsT_V13", False)
-                                    Else
-                                        success = ExecuteInTransaction("AddPartyDetails", PartyID, "ClientsT_V13", False)
-                                    End If
-                                    If Not success Then Goto Rollback
+                            ' success = ExecuteInTransaction("AddPartyContact", PartyID, locationID)
+                            ' If Not success Then Goto Rollback
 
-                                        ' Role assignments (simplified - no IsActive)
-                                        For Each y In Me.RolesListBox.ItemsSelected
-                                            RoleID = Me.RolesListBox.Column(0, y)
-                                            success = ExecuteInTransaction("AddPartyRole", PartyID, RoleID)
-                                            If Not success Then Goto Rollback
-                                            Next y
+                            ' Business details (now includes IsActive)
+                            If Me.VendorChx.value Then
+                                success = ExecuteInTransaction("AddPartyDetails", PartyID, "VendorsT_V13", True)
+                                If Not success Then Goto Rollback
+                                    success = ExecuteInTransaction("AddPartyDetails", PartyID, "ClientsT_V13", False)
+                                Else
+                                    success = ExecuteInTransaction("AddPartyDetails", PartyID, "ClientsT_V13", False)
+                                End If
+                                If Not success Then Goto Rollback
 
-                                            ' Final commit
-                                            ws.CommitTrans
-                                            LogError "Transaction completed successfully", "SUCCESS", 0, "Form", PROC_NAME
-                                            MsgBox "Operation completed successfully!", vbInformation
-                                            ResetForm
-                                            Goto Cleanup
+                                    ' Role assignments (simplified - no IsActive)
+                                    For Each y In Me.RolesListBox.ItemsSelected
+                                        RoleID = Me.RolesListBox.Column(0, y)
+                                        RoleName = Me.RolesListBox.Column(1, y)
+                                        If ExecuteInTransaction("AddPartyRole", PartyID, RoleID, RoleName) = -1 Then
+                                            Err.Raise 1007, , "AddPartyRole failed"
+                                        End If
+                                    Next y
+
+                                    ' Final commit
+                                    ws.CommitTrans
+                                    LogError "Transaction completed successfully", "SUCCESS", 0, "Form", PROC_NAME
+                                    MsgBox "Operation completed successfully!", vbInformation
+                                    ResetForm
+                                    Goto Cleanup
 
  TransactionError:
-                                                LogError "Transaction failure", "CRITICAL", Err.Number, "Form", PROC_NAME, "Line: " & Erl
-                                                Goto Rollback
+                                        LogError "Transaction failure", "CRITICAL", Err.Number, "Form", PROC_NAME, "Line: " & Erl
+                                        Goto Rollback
 
  Rollback:
-                                                    If inTransaction Then
-                                                        ws.Rollback
-                                                        LogError "Transaction rolled back", "CRITICAL", 0, "Form", PROC_NAME
-                                                        MsgBox "Operation failed. Check audit log.", vbExclamation
-                                                        Goto Cleanup
-                                                            inTransaction = False
-                                                        End If
+                                            If inTransaction Then
+                                                ws.Rollback
+                                                LogError "Transaction rolled back", "CRITICAL", 0, "Form", PROC_NAME
+                                                MsgBox "Operation failed. Check audit log.", vbExclamation
+                                                Goto Cleanup
+                                                    inTransaction = False
+                                                End If
 
  ErrorHandler:
-                                                        LogError Err.Description, "CRITICAL", Err.Number, "Form", PROC_NAME, _
-                                                        "PartyID: " & PartyID & " | LocationID: " & locationID
-                                                        Goto Rollback
+                                                LogError Err.Description, "CRITICAL", Err.Number, "Form", PROC_NAME, _
+                                                "PartyID: " & PartyID & " | LocationID: " & locationID
+                                                Goto Rollback
 
  Cleanup:
-                                                            If Not ws Is Nothing Then
-                                                                inTransaction = False
-                                                                ws.Close
-                                                                Set ws = Nothing
-                                                            End If
-                                                         Exit Sub
+                                                    If Not ws Is Nothing Then
+                                                        inTransaction = False
+                                                        ws.Close
+                                                        Set ws = Nothing
+                                                    End If
+                                                 Exit Sub
 End Sub
 Private Function ExecuteInTransaction( _
     Byval operation As String, _
@@ -325,17 +340,14 @@ Private Function ExecuteInTransaction( _
             ExecuteInTransaction = AddParty()
          Case "AddLocation"
             ExecuteInTransaction = AddLocation(CLng(params(0)))
-         Case "AddPartyLocation"
-            ' Now only takes 2 parameters (removed IsPrimary)
-            ExecuteInTransaction = AddPartyLocation(CLng(params(0)), CLng(params(1)))
          Case "AddPartyContact"
-            ExecuteInTransaction = AddPartyContact(CLng(params(0)), CLng(params(1)))
+            ExecuteInTransaction = AddPartyContact(CLng(params(0)), CLng(params(1)), CLng(params(2)))
          Case "AddPartyDetails"
             ' Now includes IsActive in the target tables
             ExecuteInTransaction = AddPartyDetails(CLng(params(0)), CStr(params(1)), CBool(params(2)))
          Case "AddPartyRole"
             ' Simplified - no longer handles IsActive
-            ExecuteInTransaction = AddPartyRole(CLng(params(0)), CLng(params(1)))
+            ExecuteInTransaction = AddPartyRole(CLng(params(0)), CLng(params(1)), CStr(params(2)))
          Case Else
             LogError "Invalid operation", "ERROR", 9001, "Transaction", PROC_NAME
             ExecuteInTransaction = -1
@@ -354,7 +366,7 @@ Private Function AddParty() As Long
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddParty"
         Dim rst As DAO.Recordset
-        Dim CorpID As Long
+        Dim corpID As Long
 
         ' Validation
         If IsNull(Me.PartyName) Or IsNull(Me.FSANumber) Then
@@ -372,19 +384,19 @@ Private Function AddParty() As Long
         End If
 
         ' Generate ID
-        CorpID = GeneratePartyCode()
-        If CorpID = -1 Then Exit Function
+        corpID = GeneratePartyCode()
+        If corpID = -1 Then Exit Function
 
             ' Create record
             Set rst = CurrentDb.OpenRecordset("PartiesT_V13", dbOpenDynaset)
             With rst
                 .AddNew
-                !CorpID = CorpID
-                !PartyCode = GenerateDisplayPartyCode(CorpID)
+                !corpID = corpID
+                !PartyCode = GenerateDisplayPartyCode(corpID)
                 !PartyName = Me.PartyName
                 .Update
                 .Bookmark = .LastModified
-                AddParty = !CorpID
+                AddParty = !corpID
             End With
 
             LogError "Party created: " & AddParty, "SUCCESS", 0, "Database", PROC_NAME
@@ -436,106 +448,100 @@ Private Function AddLocation(PartyID As Long) As Long
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddLocation"
         Dim rst As DAO.Recordset
-        Dim isPrimary As Boolean
 
-        ' Determine If this is the primary location (first location For this party)
-        isPrimary = (DCount("ID", "LocationsT_V13", "CorpID = " & PartyID) = 0)
+        ' Validate input first
+        If PartyID <= 0 Then
+            LogError "Invalid PartyID", "VALIDATION", 2001, "Database", PROC_NAME
+            AddLocation = -1
+         Exit Function
+        End If
 
-        Set rst = CurrentDb.OpenRecordset("LocationsT_V13", dbOpenDynaset)
+        ' Prepare data before opening recordset
+        Dim CountryCode As Long: CountryCode = Me.Country.Column(0)
+        Dim CountryName As String: CountryName = Me.Country.Column(1)
+        Dim City As String: City = Me.City.value
+        Dim Address As String: Address = Me.Address.value
+
+        Set rst = CurrentDb.OpenRecordset("LocationsT_V13", dbOpenDynaset, dbAppendOnly)
         With rst
             .AddNew
-            !CorpID = PartyID
-            !CountryCode = Me.Country
-            !City = Me.City
-            !Address = Me.Address
-            !isPrimary = isPrimary  ' Moved from PartyLocations_JT_V13
+            !corpID = PartyID
+            !CountryCode = CountryCode
+            !CountryName = CountryName
+            !City = City
+            !Address = Address
+            !isPrimary = True
             .Update
             .Bookmark = .LastModified
             AddLocation = !ID
         End With
 
         LogError "Location created: " & AddLocation, "SUCCESS", 0, "Database", PROC_NAME
-
- Cleanup:
-        If Not rst Is Nothing Then
-            rst.Close
-            Set rst = Nothing
-        End If
      Exit Function
 
  ErrorHandler:
         LogError "Failed To create location", "CRITICAL", Err.Number, "Database", PROC_NAME
         AddLocation = -1
-        Resume Cleanup
-End Function
-Private Function AddPartyLocation(PartyID As Long, locationID As Long) As Boolean
-    On Error Goto ErrorHandler
-        Const PROC_NAME As String = "AddPartyLocation"
-        Dim rst As DAO.Recordset
-
-        ' Validate inputs
-        If PartyID <= 0 Or locationID <= 0 Then
-            LogError "Invalid PartyID Or LocationID", "VALIDATION", 2001, "Database", PROC_NAME
-            AddPartyLocation = False
-         Exit Function
-        End If
-
-        ' Check For duplicates
-        If IsDuplicatePartyLocation(PartyID, locationID) Then
-            LogError "Duplicate PartyLocation entry", "VALIDATION", 2002, "Database", PROC_NAME
-            AddPartyLocation = False
-         Exit Function
-        End If
-
-        ' Add record (simplified - no IsPrimary field)
-        Set rst = CurrentDb.OpenRecordset("PartyLocations_JT_V13", dbOpenDynaset)
-        With rst
-            .AddNew
-            !CorpID = PartyID
-            !locationID = locationID
-            .Update
-        End With
-
-        LogError "PartyLocation added", "SUCCESS", 0, "Database", PROC_NAME
-        AddPartyLocation = True
-
- Cleanup:
         If Not rst Is Nothing Then
             rst.Close
             Set rst = Nothing
         End If
-     Exit Function
-
- ErrorHandler:
-        LogError "Failed To add PartyLocation", "CRITICAL", Err.Number, "Database", PROC_NAME
-        AddPartyLocation = False
-        Resume Cleanup
 End Function
-Private Function AddPartyContact(PartyID As Long, locationID As Long) As Boolean
+Private Function AddPartyContact( _
+    PartyID As Long, _
+    locationID As Long, _
+    RoleID As Long _
+    ) As Long
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddPartyContact"
         Dim rst As DAO.Recordset
+        Dim isVendor As Boolean
+        Dim isClient As Boolean
 
-        ' Validate inputs
-        If PartyID <= 0 Or locationID <= 0 Then
-            LogError "Invalid PartyID Or LocationID", "VALIDATION", 4001, "Database", PROC_NAME
-            AddPartyContact = False
+        ' === VALIDATION ===
+        If PartyID <= 0 Or locationID <= 0 Or RoleID <= 0 Then
+            LogError "Invalid IDs provided", "VALIDATION", 4001, "Database", PROC_NAME
          Exit Function
         End If
 
-        ' Add record
+        ' === ROLE DETECTION ===
+        isVendor = (RoleID = GetVendorRoleID())
+        isClient = (RoleID = GetClientRoleID())
+
+        ' Check For existing contact For this role
+        If RecordExists("PartyContactT_V13", , , "[CorpID] = " & PartyID & " And [Role_ID] = " & RoleID) Then
+            LogError "Duplicate contact For RoleID " & RoleID, "VALIDATION", 4003, "Database", PROC_NAME
+         Exit Function
+        End If
+
+        ' === DATABASE OPERATION ===
         Set rst = CurrentDb.OpenRecordset("PartyContactT_V13", dbOpenDynaset)
+
         With rst
             .AddNew
-            !CorpID = PartyID
+            !corpID = PartyID
             !locationID = locationID
-            !PrimaryEmail = Me.PrimaryEmail
-            !SecondaryEmail = Me.SecondaryEmail
-            !Phone = Me.Phone
+            !Role_ID = RoleID ' Store
+
+            ' --- Set contact info based on role ---
+            Select Case True
+             Case isVendor:
+                !PrimaryEmail = Nz(Me.VendorPrimaryEmail.value, "")
+                !SecondaryEmail = Nz(Me.SecondaryEmail.value, "")
+                !Phone = Nz(Me.Phone.value, "")
+
+             Case isClient:
+                !PrimaryEmail = Nz(Me.ClientPrimaryEmail.value, "")
+                !SecondaryEmail = Nz(Me.SecondaryEmail.value, "")
+                !Phone = Nz(Me.Phone.value, "")
+
+            End Select
+
             .Update
         End With
 
-        LogError "PartyContact added", "SUCCESS", 0, "Database", PROC_NAME
+        LogError "Contact added For " & "RoleID ", _
+        "SUCCESS", 0, "Database", PROC_NAME
         AddPartyContact = True
 
  Cleanup:
@@ -546,11 +552,21 @@ Private Function AddPartyContact(PartyID As Long, locationID As Long) As Boolean
      Exit Function
 
  ErrorHandler:
-        LogError "Failed To add PartyContact", "CRITICAL", Err.Number, "Database", PROC_NAME
+        LogError "Failed To add contact For RoleID " & RoleID & Err.Description, _
+        "CRITICAL", Err.Number, "Database", PROC_NAME
         AddPartyContact = False
         Resume Cleanup
 End Function
-Private Function AddPartyDetails(PartyID As Long, TableName As String, isVendor As Boolean) As Boolean
+Private Function GetVendorRoleID() As Long
+    ' Retrieve from config table Or constant
+    GetVendorRoleID = DLookup("ID", "RolesT_V13", "RoleName = 'Vendor'")
+End Function
+
+Private Function GetClientRoleID() As Long
+    ' Retrieve from config table Or constant
+    GetClientRoleID = DLookup("ID", "RolesT_V13", "RoleName = 'Client'")
+End Function
+Private Function AddPartyDetails(PartyID As Long, tableName As String, isVendor As Boolean) As Boolean
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddPartyDetails"
         Dim rst As DAO.Recordset
@@ -558,17 +574,17 @@ Private Function AddPartyDetails(PartyID As Long, TableName As String, isVendor 
         Dim DescriptionText As String
 
         ' Validate inputs
-        If PartyID <= 0 Or TableName = "" Then
+        If PartyID <= 0 Or tableName = "" Then
             LogError "Invalid PartyID Or TableName", "VALIDATION", 5001, "Database", PROC_NAME
             AddPartyDetails = False
          Exit Function
         End If
 
         ' Add record
-        Set rst = CurrentDb.OpenRecordset(TableName, dbOpenDynaset)
+        Set rst = CurrentDb.OpenRecordset(tableName, dbOpenDynaset)
         With rst
             .AddNew
-            !CorpID = PartyID
+            !corpID = PartyID
             !CreditLimit = Nz(Me.CreditLimit, 0)
             !Deposit = Nz(Me.Deposit, 0)
             !Currency = Nz(Me.Currency, "USD")
@@ -609,53 +625,52 @@ Private Function AddPartyDetails(PartyID As Long, TableName As String, isVendor 
         AddPartyDetails = False
         Resume Cleanup
 End Function
-Private Function AddPartyRole(PartyID As Long, RoleID As Long) As Boolean
+
+Private Function AddPartyRole(PartyID As Long, RoleID As Long, RoleName As String) As Long
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "AddPartyRole"
         Dim rst As DAO.Recordset
-
-        LogError "Starting AddPartyRole", "INFO", 0, "Database", PROC_NAME, _
-        "PartyID: " & PartyID & " | RoleID: " & RoleID
+        Dim newID As Long
 
         ' Validate PartyID
         If Not RecordExists("PartiesT_V13", "CorpID", PartyID) Then
             LogError "Invalid PartyID: " & PartyID, "VALIDATION", 6001, "Database", PROC_NAME
-            AddPartyRole = False
+            AddPartyRole = -1
          Exit Function
         End If
 
         ' Validate RoleID
         If Not RecordExists("RolesT_V13", "ID", RoleID) Then
             LogError "Invalid RoleID: " & RoleID, "VALIDATION", 6002, "Database", PROC_NAME
-            AddPartyRole = False
+            AddPartyRole = -1
          Exit Function
         End If
 
         ' Check For duplicates
         If IsDuplicatePartyRole(PartyID, RoleID) Then
             LogError "Duplicate PartyRole entry", "VALIDATION", 6003, "Database", PROC_NAME
-            AddPartyRole = False
+            AddPartyRole = -2 ' Special code For duplicates
          Exit Function
         End If
 
-        ' Add record (simplified - no IsActive field)
-        LogError "Opening PartyRolesJT_V13", "INFO", 0, "Database", PROC_NAME
-        Set rst = CurrentDb.OpenRecordset("PartyRolesJT_V13", dbOpenDynaset)
+        ' Add record
+        Set rst = CurrentDb.OpenRecordset("PartyRolesJT_V13", dbOpenDynaset, dbAppendOnly)
         With rst
-            LogError "Adding New record", "INFO", 0, "Database", PROC_NAME
             .AddNew
-            !CorpID = PartyID
+            !corpID = PartyID
             !RoleID = RoleID
+            !RoleName = RoleName
             !AssignmentDate = date
             .Update
+            .Bookmark = .LastModified
+            newID = !ID
         End With
 
         LogError "PartyRole added", "SUCCESS", 0, "Database", PROC_NAME
-        AddPartyRole = True
+        AddPartyRole = newID
 
  Cleanup:
         If Not rst Is Nothing Then
-            LogError "Closing recordset", "INFO", 0, "Database", PROC_NAME
             rst.Close
             Set rst = Nothing
         End If
@@ -663,27 +678,58 @@ Private Function AddPartyRole(PartyID As Long, RoleID As Long) As Boolean
 
  ErrorHandler:
         LogError "Failed To add PartyRole: " & Err.Description, "CRITICAL", Err.Number, "Database", PROC_NAME
-        AddPartyRole = False
+        AddPartyRole = -1
         Resume Cleanup
 End Function
 
 '=======================================================
 ' Utility Functions
 '=======================================================
-Private Function RecordExists(TableName As String, fieldName As String, value As Variant) As Boolean
+Private Function RecordExists( _
+    tableName As String, _
+    Optional fieldName As String = "", _
+    Optional value As Variant, _
+    Optional whereClause As String = "" _
+    ) As Boolean
     On Error Goto ErrorHandler
         Dim rst As DAO.Recordset
         Dim sql As String
 
-        sql = "Select 1 FROM " & TableName & " WHERE " & fieldName & " = " & value
+        ' Build the SQL query With proper field delimiters
+        If whereClause <> "" Then
+            sql = "Select 1 FROM [" & tableName & "] WHERE " & whereClause
+        Elseif fieldName <> "" Then
+            sql = "Select 1 FROM [" & tableName & "] WHERE [" & fieldName & "] = " & ToSQLValue(value)
+        Else
+            sql = "Select 1 FROM [" & tableName & "] WHERE 1=0"
+        End If
+
+        ' Debug output (remove after testing)
+        Debug.Print "Executing SQL: " & sql
+
+        ' Execute query
         Set rst = CurrentDb.OpenRecordset(sql, dbOpenSnapshot)
         RecordExists = Not rst.EOF
         rst.Close
+
      Exit Function
 
  ErrorHandler:
-        LogError "Failed To check record existence: " & Err.Description, "CRITICAL", Err.Number, "Utility", "RecordExists"
+        LogError "Failed To check record existence", "CRITICAL", Err.Number, "Utility", "RecordExists", _
+        "SQL: " & sql & " | Error: " & Err.Description
         RecordExists = False
+End Function
+Private Function ToSQLValue(value As Variant) As String
+    ' Helper Function To properly format values
+    If IsNull(value) Then
+        ToSQLValue = "NULL"
+    Elseif VarType(value) = vbString Then
+        ToSQLValue = "'" & Replace(value, "'", "''") & "'"
+    Elseif VarType(value) = vbDate Then
+        ToSQLValue = "#" & Format(value, "yyyy-mm-dd") & "#"
+    Else
+        ToSQLValue = CStr(value)
+    End If
 End Function
 
 Private Function JoinParams(params As Variant) As String
@@ -709,8 +755,8 @@ Private Function GeneratePartyCode() As Long
         Dim newCorpID As Long
 
         Set rst = CurrentDb.OpenRecordset("PartyCodeT_V13", dbOpenDynaset)
-        If Not rst.EOF And Not IsNull(rst!CorpID) Then
-            newCorpID = rst!CorpID + 1
+        If Not rst.EOF And Not IsNull(rst!corpID) Then
+            newCorpID = rst!corpID + 1
         Else
             newCorpID = 1
         End If
@@ -720,7 +766,7 @@ Private Function GeneratePartyCode() As Long
         Else
             rst.AddNew
         End If
-        rst!CorpID = newCorpID
+        rst!corpID = newCorpID
         rst.Update
 
         GeneratePartyCode = newCorpID
@@ -732,13 +778,13 @@ Private Function GeneratePartyCode() As Long
         GeneratePartyCode = -1
 End Function
 
-Private Function GenerateDisplayPartyCode(CorpID As Long) As String
+Private Function GenerateDisplayPartyCode(corpID As Long) As String
     On Error Goto ErrorHandler
         Const PROC_NAME As String = "GenerateDisplayPartyCode"
         Dim prefix As String
 
         prefix = IIf(Me.VendorChx.value, "VC", "C")
-        GenerateDisplayPartyCode = prefix & Format(CorpID, "000000") & Format(date, "yy")
+        GenerateDisplayPartyCode = prefix & Format(corpID, "000000") & Format(date, "yy")
 
         LogError "Generated DisplayPartyCode: " & GenerateDisplayPartyCode, "SUCCESS", 0, "Utility", PROC_NAME
      Exit Function
@@ -856,7 +902,8 @@ Private Sub ResetForm()
     Me.Country.value = Null
     Me.City.value = Null
     Me.Address.value = Null
-    Me.PrimaryEmail.value = Null
+    Me.ClientPrimaryEmail.value = Null
+    Me.VendorPrimaryEmail.value = Null
     Me.SecondaryEmail.value = Null
     Me.Phone.value = Null
     Me.CreditLimit.value = 15000 ' 15000 is the default value
@@ -886,11 +933,21 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub VendorChx_AfterUpdate()
-    If Me.VendorChx.value = -1 Then
-        Me.ClientRating.Visible = True
+    If Me.VendorChx.value = 0 Then
+        Me.VendorPrimaryEmail.Visible = False
+        Me.VendorRating.Visible = False
     Else
-        Me.ClientRating.Visible = False
+
+        Me.VendorRating.Visible = True
+        Me.VendorPrimaryEmail.Visible = True
     End If
+
+    If Me.VendorChx.value = -1 Then
+        MsgBox "Please add the Vendor Primary email, it might be different"
+        Me.VendorPrimaryEmail.Visible = True
+        Me.VendorRating.Visible = True
+    End If
+
 End Sub
 Private Sub City_GotFocus()
     If IsNull(Me.Country.value) Then
@@ -988,344 +1045,347 @@ Private Sub ResetBtn_Click()
 End Sub
 
 
-    ' Vendor/Client Management System Documentation
-    ' Overview
-    ' This Access VBA module provides a complete solution for managing vendor and client information with robust transaction handling, validation, and logging capabilities. The system handles:
-    
-    ' Party creation (vendors/clients)
-    
-    ' Location management
-    
-    ' Contact information
-    
-    ' Role assignments
-    
-    ' Detailed vendor/client-specific data
-    
-    ' Core Components
-    ' 1. Logging System
-    ' LogError Procedure
-    
-    ' Purpose: Centralized error and activity logging
-    
-    ' Parameters:
-    
-    ' ErrorMessage: Description of the error/event
-    
-    ' ErrorSource: Source of the error
-    
-    ' ErrorNumber: Error number (default 0)
-    
-    ' ModuleName: Module where error occurred
-    
-    ' ProcedureName: Procedure where error occurred
-    
-    ' AdditionalInfo: Extra context information
-    
-    ' Log Format:
-    
-    ' Timestamp
-    
-    ' Module/Procedure details
-    
-    ' Error details
-    
-    ' Additional context
-    
-    ' Output: Writes to "TransactionAudit.log" in application directory
-    
-    ' 2. Validation Framework
-    ' ValidateRequiredFields Function
-    
-    ' Validates all mandatory form fields
-    
-    ' Returns: Name of first missing/invalid field or empty string if valid
-    
-    ' Uses helper functions:
-    
-    ' GetRequiredFieldsCollection: Builds collection of required fields
-    
-    ' IsFieldMissing: Checks if a field is empty/invalid
-    
-    ' HandleMissingField: Displays error and focuses missing field
-    
-    ' IsValidEmail: Validates email format with regex
-    
-    ' 3. Transaction Management
-    ' AddPartyBtn_Click Procedure
-    
-    ' Main entry point for adding new parties
-    
-    ' Implements complete transaction workflow:
-    
-    ' Validates required fields
-    
-    ' Begins transaction
-    
-    ' Executes sequential operations:
-    
-    ' AddParty
-    
-    ' AddLocation
-    
-    ' AddPartyLocation
-    
-    ' AddPartyContact
-    
-    ' AddPartyDetails (vendor/client specific)
-    
-    ' AddPartyRole
-    
-    ' Commits on success or rolls back on error
-    
-    ' ExecuteInTransaction Function
-    
-    ' Executes specified operation within transaction context
-    
-    ' Parameters:
-    
-    ' operation: Name of operation to execute
-    
-    ' params: Array of parameters for the operation
-    
-    ' Returns: Operation result or -1 on failure
-    
-    ' Logs operation start/end and parameters
-    
-    ' 4. Database Operations
-    ' Party Management
-    ' AddParty Function
-    
-    ' Creates new party record
-    
-    ' Generates unique CorpID and PartyCode
-    
-    ' Validates for duplicate party names
-    
-    ' Returns: New CorpID or -1 on failure
-    
-    ' PartyNameExists Function
-    
-    ' Checks if party name already exists
-    
-    ' Returns: Boolean indicating existence
-    
-    ' Location Management
-    ' AddLocation Function
-    
-    ' Creates location record
-    
-    ' Sets first location as primary
-    
-    ' Returns: New location ID or -1 on failure
-    
-    ' AddPartyLocation Function
-    
-    ' Links party to location
-    
-    ' Validates for duplicates
-    
-    ' Returns: Boolean success status
-    
-    ' Contact Management
-    ' AddPartyContact Function
-    
-    ' Adds contact information for party
-    
-    ' Returns: Boolean success status
-    
-    ' Vendor/Client Specifics
-    ' AddPartyDetails Function
-    
-    ' Adds vendor or client specific details
-    
-    ' Parameters:
-    
-    ' PartyID: ID of party
-    
-    ' TableName: "VendorsT_V13" or "ClientsT_V13"
-    
-    ' isVendor: Boolean indicating vendor status
-    
-    ' Handles different fields for vendors vs clients
-    
-    ' Returns: Boolean success status
-    
-    ' Role Management
-    ' AddPartyRole Function
-    
-    ' Assigns roles to party
-    
-    ' Validates for duplicate assignments
-    
-    ' Returns: Boolean success status
-    
-    ' 5. Utility Functions
-    ' Code Generation
-    ' GeneratePartyCode Function
-    
-    ' Generates sequential CorpID from PartyCodeT_V13
-    
-    ' Returns: New CorpID or -1 on failure
-    
-    ' GenerateDisplayPartyCode Function
-    
-    ' Creates formatted display code
-    
-    ' Format: "VC" + 6 digits + 2 digit year (vendors) or "C" prefix (clients)
-    
-    ' Returns: Formatted code or error code
-    
-    ' Validation Utilities
-    ' IsDuplicate* Functions
-    
-    ' Check for duplicate relationships:
-    
-    ' PartyLocation
-    
-    ' VendorCountry
-    
-    ' PartyRole
-    
-    ' PartyServiceCategory
-    
-    ' All follow same pattern:
-    
-    ' Accept two ID parameters
-    
-    ' Return Boolean indicating existence
-    
-    ' Log results
-    
-    ' RecordExists Function
-    
-    ' Generic record existence check
-    
-    ' Parameters:
-    
-    ' TableName: Table to check
-    
-    ' fieldName: Field to check
-    
-    ' value: Value to match
-    
-    ' Returns: Boolean indicating existence
-    
-    ' 6. Form Management
-    ' ResetForm Procedure
-    
-    ' Clears all form fields
-    
-    ' Resets to default values
-    
-    ' Sets focus to first field
-    
-    ' Event Handlers
-    
-    ' Form_Load: Initializes form
-    
-    ' VendorChx_AfterUpdate: Toggles vendor-specific fields
-    
-    ' Country_AfterUpdate: Updates city list based on country
-    
-    ' *_GotFocus: Various field focus handlers
-    
-    ' Button handlers for actions (Add, Reset, Close)
-    
-    ' Database Schema
-    ' Key tables used:
-    
-    ' PartiesT_V13: Core party information
-    
-    ' LocationsT_V13: Physical locations
-    
-    ' PartyLocations_JT_V13: Party-location relationships
-    
-    ' PartyContactT_V13: Contact information
-    
-    ' VendorsT_V13: Vendor-specific data
-    
-    ' ClientsT_V13: Client-specific data
-    
-    ' RolesT_V13: Role definitions
-    
-    ' PartyRolesJT_V13: Party-role assignments
-    
-    ' PartyCodeT_V13: CorpID sequence tracker
-    
-    ' Error Handling
-    ' Comprehensive error handling throughout
-    
-    ' All procedures include:
-    
-    ' Error handler section
-    
-    ' Cleanup section for resource management
-    
-    ' Consistent logging
-    
-    ' Transaction rollback on any error
-    
-    ' Usage Flow
-    ' User enters data in form
-    
-    ' System validates all required fields
-    
-    ' Transaction begins
-    
-    ' System sequentially creates:
-    
-    ' Party record
-    
-    ' Location record
-    
-    ' Party-location relationship
-    
-    ' Contact information
-    
-    ' Vendor/client specific records
-    
-    ' Role assignments
-    
-    ' Transaction commits on success or rolls back on failure
-    
-    ' User receives success/failure notification
-    
-    ' Form resets for next entry
-    
-    ' Best Practices Implemented
-    ' Transaction Safety:
-    
-    ' All-or-nothing operations
-    
-    ' Proper rollback handling
-    
-    ' Data Validation:
-    
-    ' Field-level validation
-    
-    ' Business rule enforcement
-    
-    ' Duplicate prevention
-    
-    ' Error Handling:
-    
-    ' Consistent structure
-    
-    ' Detailed logging
-    
-    ' User-friendly messages
-    
-    ' Resource Management:
-    
-    ' Proper recordset cleanup
-    
-    ' Memory management
-    
-    ' Auditability:
-    
-    ' Comprehensive logging
-    
-    ' Timestamped operations
-    
-    ' Contextual information   
+
+
+
+' Vendor/Client Management System Documentation
+' Overview
+' This Access VBA module provides a complete solution For managing vendor And client information With robust transaction handling, validation, And logging capabilities. The system handles:
+
+' Party creation (vendors/clients)
+
+' Location management
+
+' Contact information
+
+' Role assignments
+
+' Detailed vendor/client-specific data
+
+' Core Components
+' 1. Logging System
+' LogError Procedure
+
+' Purpose: Centralized error And activity logging
+
+' Parameters:
+
+' ErrorMessage: Description of the error/event
+
+' ErrorSource: Source of the error
+
+' ErrorNumber: Error number (default 0)
+
+' ModuleName: Module where error occurred
+
+' ProcedureName: Procedure where error occurred
+
+' AdditionalInfo: Extra context information
+
+' Log Format:
+
+' Timestamp
+
+' Module/Procedure details
+
+' Error details
+
+' Additional context
+
+' Output: Writes To "TransactionAudit.log" in application directory
+
+' 2. Validation Framework
+' ValidateRequiredFields Function
+
+' Validates all mandatory form fields
+
+' Returns: Name of first missing/invalid field Or empty string If valid
+
+' Uses helper functions:
+
+' GetRequiredFieldsCollection: Builds collection of required fields
+
+' IsFieldMissing: Checks If a field is empty/invalid
+
+' HandleMissingField: Displays error And focuses missing field
+
+' IsValidEmail: Validates email format With regex
+
+' 3. Transaction Management
+' AddPartyBtn_Click Procedure
+
+' Main entry point For adding New parties
+
+' Implements complete transaction workflow:
+
+' Validates required fields
+
+' Begins transaction
+
+' Executes sequential operations:
+
+' AddParty
+
+' AddLocation
+
+' AddPartyLocation
+
+' AddPartyContact
+
+' AddPartyDetails (vendor/client specific)
+
+' AddPartyRole
+
+' Commits on success Or rolls back On Error
+
+' ExecuteInTransaction Function
+
+' Executes specified operation within transaction context
+
+' Parameters:
+
+' operation: Name of operation To execute
+
+' params: Array of parameters For the operation
+
+' Returns: Operation result Or -1 on failure
+
+' Logs operation start/end And parameters
+
+' 4. Database Operations
+' Party Management
+' AddParty Function
+
+' Creates New party record
+
+' Generates unique CorpID And PartyCode
+
+' Validates For duplicate party names
+
+' Returns: New CorpID Or -1 on failure
+
+' PartyNameExists Function
+
+' Checks If party name already exists
+
+' Returns: Boolean indicating existence
+
+' Location Management
+' AddLocation Function
+
+' Creates location record
+
+' Sets first location As primary
+
+' Returns: New location ID Or -1 on failure
+
+' AddPartyLocation Function
+
+' Links party To location
+
+' Validates For duplicates
+
+' Returns: Boolean success status
+
+' Contact Management
+' AddPartyContact Function
+
+' Adds contact information For party
+
+' Returns: Boolean success status
+
+' Vendor/Client Specifics
+' AddPartyDetails Function
+
+' Adds vendor Or client specific details
+
+' Parameters:
+
+' PartyID: ID of party
+
+' TableName: "VendorsT_V13" Or "ClientsT_V13"
+
+' isVendor: Boolean indicating vendor status
+
+' Handles different fields For vendors vs clients
+
+' Returns: Boolean success status
+
+' Role Management
+' AddPartyRole Function
+
+' Assigns roles To party
+
+' Validates For duplicate assignments
+
+' Returns: Boolean success status
+
+' 5. Utility Functions
+' Code Generation
+' GeneratePartyCode Function
+
+' Generates sequential CorpID from PartyCodeT_V13
+
+' Returns: New CorpID Or -1 on failure
+
+' GenerateDisplayPartyCode Function
+
+' Creates formatted display code
+
+' Format: "VC" + 6 digits + 2 digit year (vendors) Or "C" prefix (clients)
+
+' Returns: Formatted code Or error code
+
+' Validation Utilities
+' IsDuplicate* Functions
+
+' Check For duplicate relationships:
+
+' PartyLocation
+
+' VendorCountry
+
+' PartyRole
+
+' PartyServiceCategory
+
+' All follow same pattern:
+
+' Accept two ID parameters
+
+' Return Boolean indicating existence
+
+' Log results
+
+' RecordExists Function
+
+' Generic record existence check
+
+' Parameters:
+
+' TableName: Table To check
+
+' fieldName: Field To check
+
+' value: Value To match
+
+' Returns: Boolean indicating existence
+
+' 6. Form Management
+' ResetForm Procedure
+
+' Clears all form fields
+
+' Resets To default values
+
+' Sets focus To first field
+
+' Event Handlers
+
+' Form_Load: Initializes form
+
+' VendorChx_AfterUpdate: Toggles vendor-specific fields
+
+' Country_AfterUpdate: Updates city list based on country
+
+' *_GotFocus: Various field focus handlers
+
+' Button handlers For actions (Add, Reset, Close)
+
+' Database Schema
+' Key tables used:
+
+' PartiesT_V13: Core party information
+
+' LocationsT_V13: Physical locations
+
+' PartyLocations_JT_V13: Party-location relationships
+
+' PartyContactT_V13: Contact information
+
+' VendorsT_V13: Vendor-specific data
+
+' ClientsT_V13: Client-specific data
+
+' RolesT_V13: Role definitions
+
+' PartyRolesJT_V13: Party-role assignments
+
+' PartyCodeT_V13: CorpID sequence tracker
+
+' Error Handling
+' Comprehensive error handling throughout
+
+' All procedures include:
+
+' Error handler section
+
+' Cleanup section For resource management
+
+' Consistent logging
+
+' Transaction rollback on any error
+
+' Usage Flow
+' User enters data in form
+
+' System validates all required fields
+
+' Transaction begins
+
+' System sequentially creates:
+
+' Party record
+
+' Location record
+
+' Party-location relationship
+
+' Contact information
+
+' Vendor/client specific records
+
+' Role assignments
+
+' Transaction commits on success Or rolls back on failure
+
+' User receives success/failure notification
+
+' Form resets For Next entry
+
+' Best Practices Implemented
+' Transaction Safety:
+
+' All-Or-nothing operations
+
+' Proper rollback handling
+
+' Data Validation:
+
+' Field-level validation
+
+' Business rule enforcement
+
+' Duplicate prevention
+
+' Error Handling:
+
+' Consistent structure
+
+' Detailed logging
+
+' User-friendly messages
+
+' Resource Management:
+
+' Proper recordset cleanup
+
+' Memory management
+
+' Auditability:
+
+' Comprehensive logging
+
+' Timestamped operations
+
+' Contextual information   
